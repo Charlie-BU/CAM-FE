@@ -10,5 +10,6 @@ export const GenerateApiProposal = async (
     return api.post<GenerateApiProposalResponse>(
         `${prefix}/generateApiProposal`,
         { service_iteration_id, prompt },
+        { timeout: 5 * 60 * 1000 },
     );
 };
