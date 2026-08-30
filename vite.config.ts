@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from "node:url";
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), "VITE_");
+    const apiEnv = loadEnv(mode, process.cwd(), "API_UPSTREAM_");
     const PORT = Number(env.VITE_FE_PORT) || 9000;
     const cloudMaterialsPath = fileURLToPath(
         new URL("./cloud-materials-common/@cloud-materials/common", import.meta.url)
@@ -28,6 +29,12 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             port: PORT,
+            proxy: {
+                "/api": {
+                    target: apiEnv.API_UPSTREAM_BASE_URL,
+                    changeOrigin: true,
+                },
+            },
         },
     };
 });
