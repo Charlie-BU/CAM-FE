@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => {
                 "/api": {
                     target: apiEnv.API_UPSTREAM_BASE_URL,
                     changeOrigin: true,
+                    rewrite: (path) => path.replace(/^\/api(?=\/|$)/, ""),
                 },
             },
         },
