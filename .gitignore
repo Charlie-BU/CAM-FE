@@ -27,3 +27,5 @@ coverage
 .env
 .env.*
 !.env.example
+
+/cloud-materials-common/

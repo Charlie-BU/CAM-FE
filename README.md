@@ -37,7 +37,7 @@ VITE_API_PUBLIC_BASE_URL=/api
 VITE_FE_PORT=9000
 ```
 
-`API_UPSTREAM_BASE_URL` 是必填项；请填写 API 服务的根地址，不要额外拼接 `/v1`。浏览器请求使用 `VITE_API_PUBLIC_BASE_URL`（默认 `/api`）；开发环境由 Vite、生产环境由 Caddy 将其代理至 `API_UPSTREAM_BASE_URL`，并保留 `/api` 路径前缀。只有 `VITE_` 前缀的变量会被打进浏览器产物，切勿放入任何密钥。
+`API_UPSTREAM_BASE_URL` 是必填项；请填写 API 服务的根地址，不要额外拼接 `/v1`。浏览器请求使用 `VITE_API_PUBLIC_BASE_URL`（默认 `/api`）；开发环境由 Vite、生产环境由 Caddy 将其代理至 `API_UPSTREAM_BASE_URL` 时会移除 `/api` 路径前缀。只有 `VITE_` 前缀的变量会被打进浏览器产物，切勿放入任何密钥。
 
 ## 常用命令
 
