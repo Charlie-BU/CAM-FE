@@ -1,7 +1,7 @@
 import axios, { AxiosHeaders } from "axios";
 import type { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_PUBLIC_BASE_URL || "/api";
 
 const getAccessToken = (): string => {
     try {
