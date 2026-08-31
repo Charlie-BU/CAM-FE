@@ -80,7 +80,7 @@ const Profile: React.FC<UserProfileProps> = ({
                     className={styles.menuItem}
                     onClick={() => {
                         logout();
-                        navigate("/");
+                        navigate("/home");
                     }}
                 >
                     <IconPoweroff className={styles.menuIcon} />{" "}

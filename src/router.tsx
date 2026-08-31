@@ -9,7 +9,7 @@ const requireAuthLoader = () => {
     const token = localStorage.getItem("cam_access_token");
     if (!token) {
         Message.warning(t("common.loginFirst"));
-        return redirect("/");
+        return redirect("/cam");
     }
     return null;
 };
@@ -21,10 +21,18 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
+                loader: () => redirect("/home"),
+            },
+            {
+                path: "home",
+                element: <></>,
+            },
+            {
+                path: "cam",
                 element: <ServiceManagement />,
             },
             {
-                path: "service",
+                path: "cam/service",
                 element: <ApiManagement />,
                 loader: requireAuthLoader,
             },

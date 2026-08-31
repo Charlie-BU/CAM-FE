@@ -276,11 +276,11 @@ const Header: React.FC<HeaderProps> = (props) => {
             </Button> */}
             <div style={{ cursor: "default" }}>
                 <Breadcrumb>
-                    <Breadcrumb.Item href="/">服务列表</Breadcrumb.Item>
+                    <Breadcrumb.Item href="/cam">服务列表</Breadcrumb.Item>
                     <Breadcrumb.Item
                         href={
                             inIteration
-                                ? `/service?uuid=${serviceUuid}`
+                                ? `/cam/service?uuid=${serviceUuid}`
                                 : undefined
                         }
                         onClick={

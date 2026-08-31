@@ -56,7 +56,7 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
                         alignItems: "center",
                         cursor: "pointer",
                     }}
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate("/cam")}
                 >
                     <img
                         alt="avatar"

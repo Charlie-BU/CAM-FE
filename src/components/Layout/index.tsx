@@ -24,18 +24,20 @@ const Layout: React.FC = () => {
                     openModifyPasswordModal={openModifyPasswordModal}
                 />
             </ArcoHeader>
-            <ArcoLayout>
-                {/* height: "101%"：防止下侧shadow显示出来 */}
-                <ArcoSider style={{ width: 200, height: "101%" }}>
+            <ArcoLayout className={styles.body}>
+                <ArcoSider style={{ width: 200 }}>
                     <Sidebar />
                 </ArcoSider>
                 <ArcoContent className={styles.content}>
-                    <Watermark
-                        content={user?.username || "Guest"}
-                        fontStyle={{ color: "#9ca2a919" }}
-                    >
-                        <Outlet />
-                    </Watermark>
+                    <div className={styles.page}>
+                        <Watermark
+                            content={user?.username || "Guest"}
+                            fontStyle={{ color: "#9ca2a919" }}
+                            style={{ height: "100%" }}
+                        >
+                            <Outlet />
+                        </Watermark>
+                    </div>
                 </ArcoContent>
             </ArcoLayout>
             <ArcoFooter className={styles.footer}>

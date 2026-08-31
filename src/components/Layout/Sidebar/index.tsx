@@ -5,7 +5,7 @@ import { IconHouseDashboard } from "@cloud-materials/common/ve-o-iconbox";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styles from "./index.module.less";
-import { ApiIconCAM } from "@/assets/icons";
+import { LogoCAM } from "@/assets/icons";
 
 const MenuItem = Menu.Item;
 
@@ -15,16 +15,16 @@ const Sidebar: React.FC = () => {
     const { t } = useTranslation();
     const tabList = [
         {
-            key: "/",
+            key: "/home",
             icon: <IconHouseDashboard style={{ width: 18, height: 18 }} />,
             title: t("nav.home"),
         },
         {
-            key: "/service",
+            key: "/cam",
             icon: (
                 <img
                     alt="avatar"
-                    src={ApiIconCAM}
+                    src={LogoCAM}
                     style={{
                         width: 18,
                         height: 18,
@@ -33,7 +33,7 @@ const Sidebar: React.FC = () => {
                     }}
                 />
             ),
-            title: t("nav.apiDefinition"),
+            title: "API 管理 CAM",
         },
     ];
 
@@ -48,7 +48,9 @@ const Sidebar: React.FC = () => {
 
     const getSelectedKeys = () => {
         const path = location.pathname;
-        return [path];
+        return path === "/cam" || path.startsWith("/cam/")
+            ? ["/cam"]
+            : [path];
     };
 
     return (

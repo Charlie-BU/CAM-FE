@@ -1,11 +1,25 @@
 .layout {
     height: 100vh;
     background-color: #fff;
+    overflow: hidden;
+}
+
+.body {
+    min-height: 0;
 }
 
 .content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     padding: 0 30px;
     background-color: #fff;
+    overflow: hidden;
+}
+
+.page {
+    flex: 1;
+    min-height: 0;
     overflow: auto;
 }
 
