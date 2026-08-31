@@ -21,6 +21,7 @@ const requiredFields = ["name", "type", "required"];
 
 interface ParamTableProps {
     type: "request" | "response";
+    location?: string;
     value?: any[];
     onChange?: (value: any[]) => void;
     readOnly?: boolean;
@@ -29,6 +30,7 @@ interface ParamTableProps {
 
 const ParamTable: React.FC<ParamTableProps> = ({
     type,
+    location,
     value = [],
     onChange,
     readOnly = false,
@@ -81,6 +83,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
             name: "",
             type: "string",
             required: true,
+            nullable: false,
             description: "",
             default_value: "",
             example: "",
@@ -130,6 +133,7 @@ const ParamTable: React.FC<ParamTableProps> = ({
                                     >
                                         <ParamTable
                                             type={type}
+                                            location={location}
                                             value={record.children_params || []}
                                             onChange={(newChildren) =>
                                                 handleFieldChange(
@@ -216,6 +220,25 @@ const ParamTable: React.FC<ParamTableProps> = ({
                     disabled={readOnly}
                 />
             ),
+        },
+        {
+            title: "可为 null",
+            dataIndex: "nullable",
+            width: 110,
+            render: (val: boolean, record: any) => {
+                const isPathParam = type === "request" && location === "path";
+                return (
+                    <Switch
+                        checked={val ?? false}
+                        checkedText="可空"
+                        uncheckedText="非空"
+                        onChange={(v) =>
+                            handleFieldChange(record.id, "nullable", v)
+                        }
+                        disabled={readOnly || isPathParam}
+                    />
+                );
+            },
         },
         {
             title: "描述",

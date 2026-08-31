@@ -74,6 +74,14 @@ const requestColumns = [
             <Tag color={v ? "red" : "gray"}>{v ? "必填" : "选填"}</Tag>
         ),
     },
+    {
+        title: "可为 null",
+        dataIndex: "nullable",
+        width: 120,
+        render: (v: boolean) => (
+            <Tag color={v ? "blue" : "gray"}>{v ? "可空" : "非空"}</Tag>
+        ),
+    },
     { title: "描述", dataIndex: "description", width: 240, placeholder: "-" },
     {
         title: "默认值",
