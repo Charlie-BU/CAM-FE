@@ -52,7 +52,8 @@ export const validateMultiTypeParamRules = (
     scope: string
 ): string | null => {
     const paramsByName = new Map<string, MultiTypeParam[]>();
-    params.forEach((param) => {
+    const paramList = Array.isArray(params) ? params : [];
+    paramList.forEach((param) => {
         if (!param.name) return;
         const sameNameParams = paramsByName.get(param.name) || [];
         sameNameParams.push(param);
@@ -85,7 +86,11 @@ export const validateMultiTypeParamRules = (
         }
 
         for (const param of sameNameParams) {
-            const children = param.children_params || param.children || [];
+            const children = Array.isArray(param.children_params)
+                ? param.children_params
+                : Array.isArray(param.children)
+                  ? param.children
+                  : [];
             const childError = validateMultiTypeParamRules(
                 children,
                 `${scope}的「${name}」子参数`

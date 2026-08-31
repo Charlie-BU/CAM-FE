@@ -128,84 +128,85 @@ const ApiEdit: React.FC<ApiEditProps> = ({
         const values = await form.validate();
         setEditLoading(true);
 
-        const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
-            values.request_params_by_location
-        );
-        // 检查是否有请求参数name为空
-        if (req_params.some((param) => !param.name)) {
-            Message.warning("存在名称为空的请求参数");
-            setEditLoading(false);
-            return;
-        }
-        for (const tab of tabs) {
-            const error = validateMultiTypeParamRules(
-                values.request_params_by_location?.[
-                    tab.key as ParamLocation
-                ] || [],
-                tab.title
+        try {
+            const req_params: ApiReqParamInput[] = transformReqParamsToApiInput(
+                values.request_params_by_location
             );
-            if (error) {
-                Message.warning(error);
+            // 检查是否有请求参数name为空
+            if (req_params.some((param) => !param.name)) {
+                Message.warning("存在名称为空的请求参数");
                 setEditLoading(false);
                 return;
             }
-        }
-        // 检查是否有Path参数
-        const hasPathParams = req_params.some(
-            (param) => param.location === "path"
-        );
-        if (hasPathParams) {
-            // 检查apiPath是否包含{param}
-            const apiPath = values.path;
-            const allPathParams = req_params.filter(
+            for (const tab of tabs) {
+                const error = validateMultiTypeParamRules(
+                    values.request_params_by_location?.[
+                    tab.key as ParamLocation
+                    ] || [],
+                    tab.title
+                );
+                if (error) {
+                    Message.warning(error);
+                    setEditLoading(false);
+                    return;
+                }
+            }
+            // 检查是否有Path参数
+            const hasPathParams = req_params.some(
                 (param) => param.location === "path"
             );
-            // path参数不能为选填
-            if (allPathParams.some((param) => param.required === false)) {
-                Message.warning("Path 参数不能为选填");
-                setEditLoading(false);
-                return;
-            }
-            const allPathParamsShouldInPath = allPathParams.map(
-                (param) => `{${param.name}}`
-            );
-
-            if (
-                !allPathParamsShouldInPath.every((param) =>
-                    apiPath.includes(param)
-                )
-            ) {
-                Message.warning(
-                    "Path 参数必须用花括号包含在路径中，如：{param}"
+            if (hasPathParams) {
+                // 检查apiPath是否包含{param}
+                const apiPath = values.path;
+                const allPathParams = req_params.filter(
+                    (param) => param.location === "path"
                 );
-                setEditLoading(false);
-                return;
-            }
-        }
-        const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
-            values.response_params_by_status_code
-        );
-        // 检查是否有响应参数name为空
-        if (resp_params.some((param) => !param.name)) {
-            Message.warning("存在名称为空的响应参数");
-            setEditLoading(false);
-            return;
-        }
-        for (const [statusCode, params] of Object.entries(
-            values.response_params_by_status_code || {}
-        )) {
-            const error = validateMultiTypeParamRules(
-                params as any[],
-                `${statusCode} 响应参数`
-            );
-            if (error) {
-                Message.warning(error);
-                setEditLoading(false);
-                return;
-            }
-        }
+                // path参数不能为选填
+                if (allPathParams.some((param) => param.required === false)) {
+                    Message.warning("Path 参数不能为选填");
+                    setEditLoading(false);
+                    return;
+                }
+                const allPathParamsShouldInPath = allPathParams.map(
+                    (param) => `{${param.name}}`
+                );
 
-        const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
+                if (
+                    !allPathParamsShouldInPath.every((param) =>
+                        apiPath.includes(param)
+                    )
+                ) {
+                    Message.warning(
+                        "Path 参数必须用花括号包含在路径中，如：{param}"
+                    );
+                    setEditLoading(false);
+                    return;
+                }
+            }
+            const resp_params: ApiRespParamInput[] = transformRespParamsToApiInput(
+                values.response_params_by_status_code
+            );
+            // 检查是否有响应参数name为空
+            if (resp_params.some((param) => !param.name)) {
+                Message.warning("存在名称为空的响应参数");
+                setEditLoading(false);
+                return;
+            }
+            for (const [statusCode, params] of Object.entries(
+                values.response_params_by_status_code || {}
+            )) {
+                const error = validateMultiTypeParamRules(
+                    params as any[],
+                    `${statusCode} 响应参数`
+                );
+                if (error) {
+                    Message.warning(error);
+                    setEditLoading(false);
+                    return;
+                }
+            }
+
+            const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
             {
                 api_draft_id: apiDetail.id,
                 name: values.name,
@@ -216,15 +217,17 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                 req_params,
                 resp_params,
             };
-        try {
-            const res = await handleSaveApiDraft(data);
-            setIsDraft(false);
-            Message.success(res.message || "API 保存成功");
-        } catch (error) {
-            const msg = error instanceof Error ? error.message : "API 保存失败";
-            Message.error(msg);
+            try {
+                const res = await handleSaveApiDraft(data);
+                setIsDraft(false);
+                Message.success(res.message || "API 保存成功");
+            } catch (error) {
+                const msg = error instanceof Error ? error.message : "API 保存失败";
+                Message.error(msg);
+            }
+        } finally {
+            setEditLoading(false);
         }
-        setEditLoading(false);
     };
 
     if (!apiDetail || Object.keys(apiDetail).length === 0) {
