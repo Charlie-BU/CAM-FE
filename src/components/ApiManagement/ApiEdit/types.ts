@@ -5,6 +5,7 @@ export interface ParamItem {
     name: string;
     type: ParamType | string;
     required: boolean;
+    nullable: boolean;
     description: string;
     default_value?: string;
     example: string;

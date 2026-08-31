@@ -45,6 +45,7 @@ const RequestParamsEdit = ({
                         >
                             <ParamTable
                                 type="request"
+                                location={tab.key}
                                 setRejectSubmit={setRejectSubmit}
                             />
                         </Form.Item>
