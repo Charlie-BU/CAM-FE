@@ -8,6 +8,95 @@ import type { ParamItem } from "./types";
 
 export const generateId = () => Math.random().toString(36).substring(2, 9);
 
+type MultiTypeParam = Pick<
+    ParamItem,
+    | "name"
+    | "type"
+    | "required"
+    | "nullable"
+    | "description"
+    | "default_value"
+    | "example"
+    | "array_child_type"
+> & {
+    children_params?: MultiTypeParam[];
+    children?: MultiTypeParam[];
+};
+
+const hasValue = (value: unknown) =>
+    value !== undefined &&
+    value !== null &&
+    (typeof value !== "string" || value.trim() !== "");
+
+const hasConflictingValue = (
+    params: MultiTypeParam[],
+    field: "description" | "default_value" | "example"
+) => {
+    const values = params
+        .map((param) => param[field])
+        .filter(hasValue)
+        .map(String);
+    return new Set(values).size > 1;
+};
+
+const getTypeKey = (param: MultiTypeParam) =>
+    param.type === "array"
+        ? `array:${param.array_child_type ?? ""}`
+        : param.type;
+
+/**
+ * 同名参数会被代码生成器转换为 TypeScript 联合类型；除类型外的契约必须保持一致。
+ */
+export const validateMultiTypeParamRules = (
+    params: MultiTypeParam[],
+    scope: string
+): string | null => {
+    const paramsByName = new Map<string, MultiTypeParam[]>();
+    params.forEach((param) => {
+        if (!param.name) return;
+        const sameNameParams = paramsByName.get(param.name) || [];
+        sameNameParams.push(param);
+        paramsByName.set(param.name, sameNameParams);
+    });
+
+    for (const [name, sameNameParams] of paramsByName) {
+        if (sameNameParams.length > 1) {
+            const types = sameNameParams.map(getTypeKey);
+            if (new Set(types).size !== types.length) {
+                return `${scope}中同名参数「${name}」必须使用不同的参数类型`;
+            }
+            const first = sameNameParams[0];
+            if (
+                sameNameParams.some(
+                    (param) =>
+                        param.required !== first.required ||
+                        param.nullable !== first.nullable
+                )
+            ) {
+                return `${scope}中同名参数「${name}」的是否必填和可为 null 必须一致`;
+            }
+            if (
+                hasConflictingValue(sameNameParams, "description") ||
+                hasConflictingValue(sameNameParams, "default_value") ||
+                hasConflictingValue(sameNameParams, "example")
+            ) {
+                return `${scope}中同名参数「${name}」的描述、默认值和示例值只能相同或仅一项有值`;
+            }
+        }
+
+        for (const param of sameNameParams) {
+            const children = param.children_params || param.children || [];
+            const childError = validateMultiTypeParamRules(
+                children,
+                `${scope}的「${name}」子参数`
+            );
+            if (childError) return childError;
+        }
+    }
+
+    return null;
+};
+
 export const transformReqParamsToApiInput = (
     requestParams: Record<ParamLocation, ParamItem[]>
 ): ApiReqParamInput[] => {

@@ -1,5 +1,6 @@
 import { IconCommon, Space, Tabs, Form } from "@cloud-materials/common";
 import ParamTable from "./ParamTable";
+import MultiTypeParamHint from "./MultiTypeParamHint";
 import { tabs } from "./index";
 
 interface RequestParamsEditProps {
@@ -16,7 +17,7 @@ const RequestParamsEdit = ({
     return (
         <Space direction="vertical" size={12}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>
-                <IconCommon /> 请求参数
+                <IconCommon /> 请求参数 <MultiTypeParamHint />
             </div>
             <Tabs
                 activeTab={reqParamsActiveTab}

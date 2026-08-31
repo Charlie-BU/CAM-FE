@@ -13,6 +13,7 @@ import {
 
 import type { ResponseParam, ResponseParamDraft } from "@/services/api/types";
 import ParamTable from "./ParamTable";
+import MultiTypeParamHint from "./MultiTypeParamHint";
 import { handleConfirm } from "@/utils";
 
 interface ResponseParamsEditProps {
@@ -94,7 +95,7 @@ const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
     return (
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>
-                <IconCommon /> 响应参数
+                <IconCommon /> 响应参数 <MultiTypeParamHint />
             </div>
             <Tabs
                 type="card"
