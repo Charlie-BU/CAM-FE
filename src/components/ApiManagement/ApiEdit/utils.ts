@@ -39,10 +39,35 @@ const hasConflictingValue = (
     return new Set(values).size > 1;
 };
 
-const getTypeKey = (param: MultiTypeParam) =>
-    param.type === "array"
-        ? `array:${param.array_child_type ?? ""}`
-        : param.type;
+const getChildren = (param: MultiTypeParam): MultiTypeParam[] =>
+    Array.isArray(param.children_params)
+        ? param.children_params
+        : Array.isArray(param.children)
+          ? param.children
+          : [];
+
+const getParamShapeKey = (param: MultiTypeParam): string => {
+    const typeKey =
+        param.type === "array"
+            ? `array:${param.array_child_type ?? ""}`
+            : param.type;
+    if (
+        param.type !== "object" &&
+        !(param.type === "array" && param.array_child_type === "object")
+    ) {
+        return typeKey;
+    }
+
+    // 对象的 TypeScript 类型由完整字段结构决定，字段顺序不影响结构是否相同。
+    const childShape = getChildren(param)
+        .map(
+            (child) =>
+                `${child.name}:${getParamShapeKey(child)}:${child.required}:${child.nullable}`
+        )
+        .sort()
+        .join(",");
+    return `${typeKey}:{${childShape}}`;
+};
 
 /**
  * 同名参数会被代码生成器转换为 TypeScript 联合类型；除类型外的契约必须保持一致。
@@ -62,7 +87,7 @@ export const validateMultiTypeParamRules = (
 
     for (const [name, sameNameParams] of paramsByName) {
         if (sameNameParams.length > 1) {
-            const types = sameNameParams.map(getTypeKey);
+            const types = sameNameParams.map(getParamShapeKey);
             if (new Set(types).size !== types.length) {
                 return `${scope}中同名参数「${name}」必须使用不同的参数类型`;
             }
@@ -86,11 +111,7 @@ export const validateMultiTypeParamRules = (
         }
 
         for (const param of sameNameParams) {
-            const children = Array.isArray(param.children_params)
-                ? param.children_params
-                : Array.isArray(param.children)
-                  ? param.children
-                  : [];
+            const children = getChildren(param);
             const childError = validateMultiTypeParamRules(
                 children,
                 `${scope}的「${name}」子参数`
