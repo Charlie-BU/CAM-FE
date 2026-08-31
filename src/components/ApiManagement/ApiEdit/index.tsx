@@ -15,6 +15,7 @@ import {
     transformRespParamsToApiInput,
     transformAiReqParamsToFormValues,
     transformAiRespParamsToFormValues,
+    validateMultiTypeParamRules,
 } from "./utils";
 import type {
     ApiDetail,
@@ -136,6 +137,19 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             setEditLoading(false);
             return;
         }
+        for (const tab of tabs) {
+            const error = validateMultiTypeParamRules(
+                values.request_params_by_location?.[
+                    tab.key as ParamLocation
+                ] || [],
+                tab.title
+            );
+            if (error) {
+                Message.warning(error);
+                setEditLoading(false);
+                return;
+            }
+        }
         // 检查是否有Path参数
         const hasPathParams = req_params.some(
             (param) => param.location === "path"
@@ -176,6 +190,19 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             Message.warning("存在名称为空的响应参数");
             setEditLoading(false);
             return;
+        }
+        for (const [statusCode, params] of Object.entries(
+            values.response_params_by_status_code || {}
+        )) {
+            const error = validateMultiTypeParamRules(
+                params as any[],
+                `${statusCode} 响应参数`
+            );
+            if (error) {
+                Message.warning(error);
+                setEditLoading(false);
+                return;
+            }
         }
 
         const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
