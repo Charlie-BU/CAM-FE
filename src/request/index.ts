@@ -3,9 +3,20 @@ import type { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_PUBLIC_BASE_URL || "/api";
 
+let accessTokenProvider: (() => string) | undefined;
+let unauthorizedHandler: (() => void) | undefined;
+
+export const setPlatformAuth = (
+    provider?: () => string,
+    onUnauthorized?: () => void,
+) => {
+    accessTokenProvider = provider;
+    unauthorizedHandler = onUnauthorized;
+};
+
 const getAccessToken = (): string => {
     try {
-        return localStorage.getItem("cam_access_token") || "";
+        return accessTokenProvider?.() || localStorage.getItem("cam_access_token") || "";
     } catch {
         return "";
     }
@@ -53,9 +64,12 @@ http.interceptors.response.use(
         const message = error.message || "Request error";
         // 处理 401 或网络错误：清除 token 和用户信息缓存
         if (error.code === "ERR_NETWORK" || status === 401) {
-            localStorage.removeItem("cam_access_token");
-            sessionStorage.removeItem("user-store");
-            window.location.reload();
+            if (unauthorizedHandler) {
+                unauthorizedHandler();
+            } else {
+                localStorage.removeItem("cam_access_token");
+                sessionStorage.removeItem("user-store");
+            }
         }
         return Promise.reject(new ApiError(message, status, data));
     }

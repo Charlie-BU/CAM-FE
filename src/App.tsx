@@ -1,11 +1,20 @@
-import React, { useEffect } from "react";
-import { RouterProvider } from "react-router-dom";
-import router from "@/router";
+import React, { useEffect, useMemo } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import "./App.less";
 import { useUser } from "@/hooks/useUser";
+import CamApp from "@/remote";
+import type { PlatformContextValue } from "@/platform";
+import i18n from "@/i18n";
 
 const App: React.FC = () => {
-    const { user, fetchUser } = useUser();
+    const {
+        user,
+        fetchUser,
+        openLoginModal,
+        openRegisterModal,
+        logout,
+    } = useUser();
+    const accessToken = localStorage.getItem("cam_access_token") || "";
 
     useEffect(() => {
         const token = localStorage.getItem("cam_access_token");
@@ -14,7 +23,27 @@ const App: React.FC = () => {
         }
     }, [fetchUser, user]);
 
-    return <RouterProvider router={router} />;
+    const platform = useMemo<PlatformContextValue>(
+        () => ({
+            user,
+            accessToken,
+            locale: i18n.resolvedLanguage || "zh-CN",
+            openLoginModal,
+            openRegisterModal,
+            logout,
+        }),
+        [accessToken, logout, openLoginModal, openRegisterModal, user],
+    );
+
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route index element={<Navigate to="/cam" replace />} />
+                <Route path="cam/*" element={<CamApp platform={platform} />} />
+                <Route path="*" element={<Navigate to="/cam" replace />} />
+            </Routes>
+        </BrowserRouter>
+    );
 };
 
 export default App;

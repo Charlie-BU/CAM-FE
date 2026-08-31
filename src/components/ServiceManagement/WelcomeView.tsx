@@ -2,7 +2,7 @@ import { Space, Button, Typography } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 
 import styles from "./index.module.less";
-import { useUser } from "@/hooks/useUser";
+import { usePlatform } from "@/platform";
 import type { UserProfile } from "@/services/user/types";
 import { userAvatar } from "@/utils";
 
@@ -36,7 +36,7 @@ const WelcomeLoggedIn: React.FC<{
 // 未登录欢迎区块
 const WelcomeGuest: React.FC = () => {
     const { t } = useTranslation();
-    const { openLoginModal, openRegisterModal } = useUser();
+    const { openLoginModal, openRegisterModal } = usePlatform();
 
     const handleGoRegister = () => {
         openRegisterModal();
