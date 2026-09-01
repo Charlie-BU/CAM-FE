@@ -12,7 +12,7 @@
     respond @health "OK" 200
 
     handle_path /api/* {
-        reverse_proxy {$API_UPSTREAM_BASE_URL}
+        reverse_proxy {$CAM_UPSTREAM_BASE_URL}
     }
 
     handle {

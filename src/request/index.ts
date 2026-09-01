@@ -1,8 +1,7 @@
 import axios, { AxiosHeaders } from "axios";
 import type { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
-export const DEFAULT_API_BASE_URL =
-    import.meta.env.VITE_API_PUBLIC_BASE_URL || "/api";
+export const DEFAULT_API_BASE_URL = "/api";
 
 let accessTokenProvider: (() => string) | undefined;
 let unauthorizedHandler: (() => void) | undefined;

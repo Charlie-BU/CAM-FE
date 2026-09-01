@@ -6,7 +6,7 @@ import { fileURLToPath, URL } from "node:url";
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), "VITE_");
-    const apiEnv = loadEnv(mode, process.cwd(), "API_UPSTREAM_");
+    const apiEnv = loadEnv(mode, process.cwd(), "CAM_UPSTREAM_");
     const PORT = Number(env.VITE_FE_PORT) || 9100;
     const cloudMaterialsPath = fileURLToPath(
         new URL("./cloud-materials-common/@cloud-materials/common", import.meta.url)
@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
             cors: true,
             proxy: {
                 "/api": {
-                    target: apiEnv.API_UPSTREAM_BASE_URL,
+                    target: apiEnv.CAM_UPSTREAM_BASE_URL,
                     changeOrigin: true,
                     rewrite: (path) => path.replace(/^\/api(?=\/|$)/, ""),
                 },

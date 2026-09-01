@@ -31,13 +31,12 @@ pnpm dev
 在 `.env.local` 中配置后端地址：
 
 ```ini
-API_UPSTREAM_BASE_URL=http://localhost:1024
-VITE_API_PUBLIC_BASE_URL=/api
+CAM_UPSTREAM_BASE_URL=http://localhost:1024
 # 可选；当前开发服务器默认使用 9100
 VITE_FE_PORT=9100
 ```
 
-`API_UPSTREAM_BASE_URL` 是必填项；请填写 API 服务的根地址，不要额外拼接 `/v1`。浏览器请求使用 `VITE_API_PUBLIC_BASE_URL`（默认 `/api`）；开发环境由 Vite、生产环境由 Caddy 将其代理至 `API_UPSTREAM_BASE_URL` 时会移除 `/api` 路径前缀。只有 `VITE_` 前缀的变量会被打进浏览器产物，切勿放入任何密钥。
+`CAM_UPSTREAM_BASE_URL` 是必填项；请填写 API 服务的根地址，不要额外拼接 `/v1`。浏览器请求固定使用同源 `/api`；开发环境由 Vite、生产环境由 Caddy 将其代理至 `CAM_UPSTREAM_BASE_URL` 时会移除 `/api` 路径前缀。只有 `VITE_` 前缀的变量会被打进浏览器产物，切勿放入任何密钥。
 
 ## 常用命令
 
@@ -87,8 +86,7 @@ public/                    # 静态资源
 
 执行 `pnpm build` 后部署 `dist/`。部署环境需要：
 
-- 以构建时环境变量注入 `VITE_API_PUBLIC_BASE_URL`（默认 `/api`）；
-- 将 `API_UPSTREAM_BASE_URL` 作为容器运行时环境变量传给 Caddy；
+- 将 `CAM_UPSTREAM_BASE_URL` 作为容器运行时环境变量传给 Caddy；
 - 对 SPA 路由配置回退到 `index.html`；
 
 浏览器仅访问同源 `/api`，因此无需为该前端额外配置后端 CORS。
