@@ -1,18 +1,33 @@
 import axios, { AxiosHeaders } from "axios";
 import type { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_PUBLIC_BASE_URL || "/api";
+export const DEFAULT_API_BASE_URL = "/api";
+
+let accessTokenProvider: (() => string) | undefined;
+let unauthorizedHandler: (() => void) | undefined;
+
+export const setPlatformAuth = (
+    provider?: () => string,
+    onUnauthorized?: () => void,
+) => {
+    accessTokenProvider = provider;
+    unauthorizedHandler = onUnauthorized;
+};
+
+export const setApiBase = (baseURL: string) => {
+    http.defaults.baseURL = baseURL;
+};
 
 const getAccessToken = (): string => {
     try {
-        return localStorage.getItem("cam_access_token") || "";
+        return accessTokenProvider?.() || "";
     } catch {
         return "";
     }
 };
 
 export const http: AxiosInstance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: DEFAULT_API_BASE_URL,
     timeout: 60000,
     headers: {
         "Content-Type": "application/json",
@@ -51,11 +66,8 @@ http.interceptors.response.use(
         const status = error?.response?.status;
         const data = error?.response?.data;
         const message = error.message || "Request error";
-        // 处理 401 或网络错误：清除 token 和用户信息缓存
-        if (error.code === "ERR_NETWORK" || status === 401) {
-            localStorage.removeItem("cam_access_token");
-            sessionStorage.removeItem("user-store");
-            window.location.reload();
+        if (status === 401) {
+            unauthorizedHandler?.();
         }
         return Promise.reject(new ApiError(message, status, data));
     }

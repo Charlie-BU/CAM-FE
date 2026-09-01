@@ -31,13 +31,12 @@ pnpm dev
 在 `.env.local` 中配置后端地址：
 
 ```ini
-API_UPSTREAM_BASE_URL=http://localhost:1024
-VITE_API_PUBLIC_BASE_URL=/api
-# 可选；当前开发服务器默认使用 9000
-VITE_FE_PORT=9000
+CAM_UPSTREAM_BASE_URL=http://localhost:1024
+# 可选；当前开发服务器默认使用 9100
+VITE_FE_PORT=9100
 ```
 
-`API_UPSTREAM_BASE_URL` 是必填项；请填写 API 服务的根地址，不要额外拼接 `/v1`。浏览器请求使用 `VITE_API_PUBLIC_BASE_URL`（默认 `/api`）；开发环境由 Vite、生产环境由 Caddy 将其代理至 `API_UPSTREAM_BASE_URL` 时会移除 `/api` 路径前缀。只有 `VITE_` 前缀的变量会被打进浏览器产物，切勿放入任何密钥。
+`CAM_UPSTREAM_BASE_URL` 是必填项；请填写 API 服务的根地址，不要额外拼接 `/v1`。浏览器请求固定使用同源 `/api`；开发环境由 Vite、生产环境由 Caddy 将其代理至 `CAM_UPSTREAM_BASE_URL` 时会移除 `/api` 路径前缀。只有 `VITE_` 前缀的变量会被打进浏览器产物，切勿放入任何密钥。
 
 ## 常用命令
 
@@ -57,6 +56,12 @@ pnpm preview   # 本地预览生产构建
 - 通过后端 AI 接口生成 API 草稿建议。
 - 中英文界面，本地化文件位于 `src/i18n/locales/`。
 
+## CDK 主站接入
+
+CAM 通过 Module Federation 暴露 `cam/App`，构建产物包含 `mf-manifest.json` 和 `remoteEntry.js`。CDK-Pedestal 在 `/cam/*` 下加载该模块，并通过 `PlatformContextValue` 传入当前用户、访问令牌、CAM API 基地址、语言和未授权回调。
+
+CAM 本身只渲染业务主体，不再包含全局顶导、侧导和底导，也不提供本地平台上下文。独立启动本仓库仅用于暴露 Module Federation 远程入口；功能调试请同时启动 CDI-Pedestal，并从主站访问 `/cam/*`。
+
 ## 目录结构
 
 ```text
@@ -66,14 +71,14 @@ src/
   services/               # 按 user/service/api/ai 划分的 API 调用与类型
   request/                # Axios 实例、Bearer token 与统一错误处理
   i18n/                   # 国际化初始化与语言包
-  router.tsx               # 路由和登录保护
+  router.tsx               # 子应用路由
   main.tsx                 # React 入口
 public/                    # 静态资源
 ```
 
 ## 与后端的集成
 
-所有 API 请求经 `src/request/index.ts` 发送；它会读取 `cam_access_token` 并追加 `Authorization: Bearer <token>`。当后端返回 401 或网络错误时，客户端会清理登录态并刷新页面。
+所有 API 请求经 `src/request/index.ts` 发送；用户信息和 access token 完全由基座透传，CAM 不读写本地登录态。请求时会将基座传入的 token 追加为 `Authorization: Bearer <token>`。
 
 接口路径和类型定义按领域收敛在 `src/services/`。新增或调整后端合同（字段、错误语义、路由）时，应同时更新对应的 `types.ts` 与调用封装，再更新 UI；避免在组件里直接拼接请求。
 
@@ -81,8 +86,7 @@ public/                    # 静态资源
 
 执行 `pnpm build` 后部署 `dist/`。部署环境需要：
 
-- 以构建时环境变量注入 `VITE_API_PUBLIC_BASE_URL`（默认 `/api`）；
-- 将 `API_UPSTREAM_BASE_URL` 作为容器运行时环境变量传给 Caddy；
+- 将 `CAM_UPSTREAM_BASE_URL` 作为容器运行时环境变量传给 Caddy；
 - 对 SPA 路由配置回退到 `index.html`；
 
 浏览器仅访问同源 `/api`，因此无需为该前端额外配置后端 CORS。

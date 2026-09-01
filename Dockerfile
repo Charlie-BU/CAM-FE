@@ -21,10 +21,6 @@ RUN test -n "${CLOUD_MATERIALS_GITHUB_TOKEN}" \
     "https://x-access-token:${CLOUD_MATERIALS_GITHUB_TOKEN}@github.com/Charlie-BU/cloud-materials-common.git" \
     ./cloud-materials-common
 
-# Vite embeds VITE_* values into the generated JavaScript during the build.
-ARG VITE_API_PUBLIC_BASE_URL=/api
-ENV VITE_API_PUBLIC_BASE_URL=${VITE_API_PUBLIC_BASE_URL}
-
 RUN pnpm build
 
 
@@ -33,8 +29,8 @@ FROM caddy:2-alpine
 WORKDIR /srv
 
 # Caddy reads this value at runtime to proxy browser requests from /api.
-ARG API_UPSTREAM_BASE_URL
-ENV API_UPSTREAM_BASE_URL=${API_UPSTREAM_BASE_URL}
+ARG CAM_UPSTREAM_BASE_URL
+ENV CAM_UPSTREAM_BASE_URL=${CAM_UPSTREAM_BASE_URL}
 
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /app/dist /srv

@@ -203,7 +203,7 @@ export const useService = () => {
 
     const handleViewService = useCallback(
         (service_uuid: string) => {
-            navigate(`/service?uuid=${service_uuid}`);
+            navigate(`/cam/service?uuid=${service_uuid}`);
         },
         [navigate],
     );
@@ -357,7 +357,7 @@ export const useThisService = (service_uuid: string) => {
             const msg =
                 err instanceof Error ? err.message : t("service.failure");
             Message.warning(msg || "获取版本失败");
-            navigate("/");
+            navigate("/cam");
         } finally {
             setLoading(false);
         }

@@ -1,12 +1,13 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import { federation } from "@module-federation/vite";
 import { fileURLToPath, URL } from "node:url";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), "VITE_");
-    const apiEnv = loadEnv(mode, process.cwd(), "API_UPSTREAM_");
-    const PORT = Number(env.VITE_FE_PORT) || 9000;
+    const apiEnv = loadEnv(mode, process.cwd(), "CAM_UPSTREAM_");
+    const PORT = Number(env.VITE_FE_PORT) || 9100;
     const cloudMaterialsPath = fileURLToPath(
         new URL("./cloud-materials-common/@cloud-materials/common", import.meta.url)
     );
@@ -15,7 +16,25 @@ export default defineConfig(({ mode }) => {
     );
 
     return {
-        plugins: [react()],
+        base:
+            env.VITE_CAM_PUBLIC_BASE_URL ||
+            (mode === "development" ? `http://localhost:${PORT}` : "/"),
+        plugins: [
+            react(),
+            federation({
+                name: "cam",
+                filename: "remoteEntry.js",
+                manifest: true,
+                dts: false,
+                exposes: {
+                    "./App": "./src/remote.tsx",
+                },
+                shared: {
+                    react: { singleton: true },
+                    "react-router-dom": { singleton: true },
+                },
+            }),
+        ],
         resolve: {
             alias: {
                 "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -29,13 +48,16 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             port: PORT,
+            origin: `http://localhost:${PORT}`,
+            cors: true,
             proxy: {
                 "/api": {
-                    target: apiEnv.API_UPSTREAM_BASE_URL,
+                    target: apiEnv.CAM_UPSTREAM_BASE_URL,
                     changeOrigin: true,
                     rewrite: (path) => path.replace(/^\/api(?=\/|$)/, ""),
                 },
             },
         },
+        build: { target: "chrome89" },
     };
 });

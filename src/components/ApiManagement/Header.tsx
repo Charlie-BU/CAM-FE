@@ -19,6 +19,7 @@ import styles from "./index.module.less";
 import type { UserProfile, UserRole } from "@/services/user/types";
 import { copyToClipboard, genUserRoleTag, userAvatar } from "@/utils";
 import { useUser } from "@/hooks/useUser";
+import { usePlatform } from "@/platform";
 
 const { Text } = Typography;
 
@@ -63,7 +64,8 @@ const Header: React.FC<HeaderProps> = (props) => {
         },
     } = props;
 
-    const { user, getUserByUsernameOrNicknameOrEmail } = useUser();
+    const { user } = usePlatform();
+    const { getUserByUsernameOrNicknameOrEmail } = useUser();
 
     const isServiceOwnerOrIsL0 =
         personInCharge.id === user?.id || user?.level === 0;
@@ -276,11 +278,11 @@ const Header: React.FC<HeaderProps> = (props) => {
             </Button> */}
             <div style={{ cursor: "default" }}>
                 <Breadcrumb>
-                    <Breadcrumb.Item href="/">服务列表</Breadcrumb.Item>
+                    <Breadcrumb.Item href="/cam">服务列表</Breadcrumb.Item>
                     <Breadcrumb.Item
                         href={
                             inIteration
-                                ? `/service?uuid=${serviceUuid}`
+                                ? `/cam/service?uuid=${serviceUuid}`
                                 : undefined
                         }
                         onClick={
