@@ -87,9 +87,12 @@ public/                    # 静态资源
 执行 `pnpm build` 后部署 `dist/`。部署环境需要：
 
 - 将 `CAM_UPSTREAM_BASE_URL` 作为容器运行时环境变量传给 Caddy；
+- 将 `VITE_CAM_PUBLIC_BASE_URL` 作为构建期变量设为 CAM-FE 的公网根地址，并保留末尾的 `/`。例如 `https://cam-fe-production-<service-id>.up.railway.app/`；
 - 对 SPA 路由配置回退到 `index.html`；
 
 浏览器仅访问同源 `/api`，因此无需为该前端额外配置后端 CORS。
+
+当 CAM 由 CDI-Pedestal 以 Module Federation 方式跨域加载时，`VITE_CAM_PUBLIC_BASE_URL` 为必填项。它会写入 `mf-manifest.json` 的 `publicPath`，用于定位 `remoteEntry.js` 与 `assets/*`。若保留默认值 `/`，浏览器会错误地从 CDI-Pedestal 域名请求这些文件，并因返回 `index.html` 而报 JavaScript MIME 类型错误。该变量在构建时生效；在 Railway 修改后必须重新部署 CAM-FE。
 
 ## 开发约定
 

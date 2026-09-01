@@ -21,6 +21,8 @@ RUN test -n "${CLOUD_MATERIALS_GITHUB_TOKEN}" \
     "https://x-access-token:${CLOUD_MATERIALS_GITHUB_TOKEN}@github.com/Charlie-BU/cloud-materials-common.git" \
     ./cloud-materials-common
 
+ARG VITE_CAM_PUBLIC_BASE_URL
+ENV VITE_CAM_PUBLIC_BASE_URL=${VITE_CAM_PUBLIC_BASE_URL}
 RUN pnpm build
 
 
