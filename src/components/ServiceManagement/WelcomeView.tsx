@@ -1,8 +1,7 @@
-import { Space, Button, Typography } from "@cloud-materials/common";
+import { Space, Typography } from "@cloud-materials/common";
 import { useTranslation } from "react-i18next";
 
 import styles from "./index.module.less";
-import { usePlatform } from "@/platform";
 import type { UserProfile } from "@/services/user/types";
 import { userAvatar } from "@/utils";
 
@@ -33,38 +32,4 @@ const WelcomeLoggedIn: React.FC<{
     );
 };
 
-// 未登录欢迎区块
-const WelcomeGuest: React.FC = () => {
-    const { t } = useTranslation();
-    const { openLoginModal, openRegisterModal } = usePlatform();
-
-    const handleGoRegister = () => {
-        openRegisterModal();
-    };
-    const handleGoLogin = () => {
-        openLoginModal();
-    };
-    return (
-        <div className={styles.hero}>
-            <Title heading={3} className={styles.title}>
-                {t("service.welcomeTitle")}
-            </Title>
-            <Text className={styles.subtitle}>
-                登录后即可管理你的 API
-                服务与版本，点击右上角头像进行登录或直接注册。
-            </Text>
-            <div className={styles.actions}>
-                <Space>
-                    <Button type="primary" onClick={handleGoLogin}>
-                        {t("login.login")}
-                    </Button>
-                    <Button type="primary" onClick={handleGoRegister}>
-                        {t("register.submit")}
-                    </Button>
-                </Space>
-            </div>
-        </div>
-    );
-};
-
-export { WelcomeLoggedIn, WelcomeGuest };
+export { WelcomeLoggedIn };

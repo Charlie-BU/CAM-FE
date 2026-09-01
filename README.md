@@ -33,8 +33,8 @@ pnpm dev
 ```ini
 API_UPSTREAM_BASE_URL=http://localhost:1024
 VITE_API_PUBLIC_BASE_URL=/api
-# 可选；当前开发服务器默认使用 9000
-VITE_FE_PORT=9000
+# 可选；当前开发服务器默认使用 9100
+VITE_FE_PORT=9100
 ```
 
 `API_UPSTREAM_BASE_URL` 是必填项；请填写 API 服务的根地址，不要额外拼接 `/v1`。浏览器请求使用 `VITE_API_PUBLIC_BASE_URL`（默认 `/api`）；开发环境由 Vite、生产环境由 Caddy 将其代理至 `API_UPSTREAM_BASE_URL` 时会移除 `/api` 路径前缀。只有 `VITE_` 前缀的变量会被打进浏览器产物，切勿放入任何密钥。
@@ -79,7 +79,7 @@ public/                    # 静态资源
 
 ## 与后端的集成
 
-所有 API 请求经 `src/request/index.ts` 发送；它会读取 `cam_access_token` 并追加 `Authorization: Bearer <token>`。当后端返回 401 或网络错误时，客户端会清理登录态并刷新页面。
+所有 API 请求经 `src/request/index.ts` 发送；用户信息和 access token 完全由基座透传，CAM 不读写本地登录态。请求时会将基座传入的 token 追加为 `Authorization: Bearer <token>`。
 
 接口路径和类型定义按领域收敛在 `src/services/`。新增或调整后端合同（字段、错误语义、路由）时，应同时更新对应的 `types.ts` 与调用封装，再更新 UI；避免在组件里直接拼接请求。
 

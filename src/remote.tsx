@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { PlatformProvider } from "@/platform";
 import type { PlatformContextValue } from "@/platform";
-import { setPlatformAuth } from "@/request";
+import { setApiBase, setPlatformAuth } from "@/request";
 import { CamRoutes } from "@/router";
 import i18n from "./i18n";
 import "./App.less";
@@ -11,13 +11,14 @@ interface CamAppProps {
 }
 
 const CamApp = ({ platform }: CamAppProps) => {
-    setPlatformAuth(() => platform.accessToken, platform.logout);
+    setPlatformAuth(() => platform.accessToken);
+    setApiBase(platform.apiBase);
 
     useEffect(() => {
-        setPlatformAuth(() => platform.accessToken, platform.logout);
+        setPlatformAuth(() => platform.accessToken);
+        setApiBase(platform.apiBase);
         void i18n.changeLanguage(platform.locale);
-        return () => setPlatformAuth();
-    }, [platform.accessToken, platform.locale, platform.logout]);
+    }, [platform.accessToken, platform.apiBase, platform.locale]);
 
     return (
         <PlatformProvider value={platform}>
