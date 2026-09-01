@@ -11,6 +11,10 @@
     @health path /health
     respond @health "OK" 200
 
+    # Allow the pedestal to load the Module Federation manifest and assets.
+    @federation_assets path /mf-manifest.json /remoteEntry.js /assets/*
+    header @federation_assets Access-Control-Allow-Origin "*"
+
     handle_path /api/* {
         reverse_proxy {$CAM_UPSTREAM_BASE_URL}
     }
