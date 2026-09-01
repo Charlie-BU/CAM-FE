@@ -2,15 +2,9 @@
 import { api } from "@/request";
 import type {
     GetUserByUsernameOrNicknameOrEmailResponse,
-    UserResponse,
 } from "./types";
 
 const prefix = "/v1/user";
-
-// 获取用户信息
-export const GetUserById = async (id: number) => {
-    return api.get<UserResponse>(`${prefix}/getUserById`, { id });
-};
 
 // 通过用户名或昵称或邮箱获取用户信息
 export const GetUserByUsernameOrNicknameOrEmail = async (

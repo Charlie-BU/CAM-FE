@@ -5,9 +5,14 @@ export const DEFAULT_API_BASE_URL =
     import.meta.env.VITE_API_PUBLIC_BASE_URL || "/api";
 
 let accessTokenProvider: (() => string) | undefined;
+let unauthorizedHandler: (() => void) | undefined;
 
-export const setPlatformAuth = (provider: () => string) => {
+export const setPlatformAuth = (
+    provider?: () => string,
+    onUnauthorized?: () => void,
+) => {
     accessTokenProvider = provider;
+    unauthorizedHandler = onUnauthorized;
 };
 
 export const setApiBase = (baseURL: string) => {
@@ -62,6 +67,9 @@ http.interceptors.response.use(
         const status = error?.response?.status;
         const data = error?.response?.data;
         const message = error.message || "Request error";
+        if (status === 401) {
+            unauthorizedHandler?.();
+        }
         return Promise.reject(new ApiError(message, status, data));
     }
 );

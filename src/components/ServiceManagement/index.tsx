@@ -9,7 +9,11 @@ const ServiceManagement: React.FC = () => {
     const { user } = usePlatform();
     const { getUserByUsernameOrNicknameOrEmail } = useUser();
     if (!user) {
-        return <Spin dot loading />;
+        return (
+            <div className="cam-loading">
+                <Spin dot loading />
+            </div>
+        );
     }
     return (
         <LoggedInView

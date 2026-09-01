@@ -7,6 +7,7 @@ export interface PlatformContextValue {
     accessToken: string;
     apiBase: string;
     locale: string;
+    onUnauthorized: () => void;
 }
 
 const PlatformContext = createContext<PlatformContextValue | null>(null);

@@ -11,14 +11,20 @@ interface CamAppProps {
 }
 
 const CamApp = ({ platform }: CamAppProps) => {
-    setPlatformAuth(() => platform.accessToken);
+    setPlatformAuth(() => platform.accessToken, platform.onUnauthorized);
     setApiBase(platform.apiBase);
 
     useEffect(() => {
-        setPlatformAuth(() => platform.accessToken);
+        setPlatformAuth(() => platform.accessToken, platform.onUnauthorized);
         setApiBase(platform.apiBase);
         void i18n.changeLanguage(platform.locale);
-    }, [platform.accessToken, platform.apiBase, platform.locale]);
+        return () => setPlatformAuth();
+    }, [
+        platform.accessToken,
+        platform.apiBase,
+        platform.locale,
+        platform.onUnauthorized,
+    ]);
 
     return (
         <PlatformProvider value={platform}>

@@ -59,9 +59,9 @@ pnpm preview   # 本地预览生产构建
 
 ## CDK 主站接入
 
-CAM 通过 Module Federation 暴露 `cam/App`，构建产物包含 `mf-manifest.json` 和 `remoteEntry.js`。CDK-Pedestal 在 `/cam/*` 下加载该模块，并通过 `PlatformContextValue` 传入当前用户、访问令牌、语言和登录操作。
+CAM 通过 Module Federation 暴露 `cam/App`，构建产物包含 `mf-manifest.json` 和 `remoteEntry.js`。CDK-Pedestal 在 `/cam/*` 下加载该模块，并通过 `PlatformContextValue` 传入当前用户、访问令牌、CAM API 基地址、语言和未授权回调。
 
-CAM 本身只渲染业务主体，不再包含全局顶导、侧导和底导。直接运行本仓库时会创建一份本地平台上下文，便于独立开发；被主站加载时，请求层优先使用主站传入的令牌。
+CAM 本身只渲染业务主体，不再包含全局顶导、侧导和底导，也不提供本地平台上下文。独立启动本仓库仅用于暴露 Module Federation 远程入口；功能调试请同时启动 CDI-Pedestal，并从主站访问 `/cam/*`。
 
 ## 目录结构
 
@@ -72,7 +72,7 @@ src/
   services/               # 按 user/service/api/ai 划分的 API 调用与类型
   request/                # Axios 实例、Bearer token 与统一错误处理
   i18n/                   # 国际化初始化与语言包
-  router.tsx               # 路由和登录保护
+  router.tsx               # 子应用路由
   main.tsx                 # React 入口
 public/                    # 静态资源
 ```
