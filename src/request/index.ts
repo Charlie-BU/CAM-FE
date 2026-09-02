@@ -18,7 +18,8 @@ export const setApiBase = (baseURL: string) => {
     http.defaults.baseURL = baseURL;
 };
 
-const getAccessToken = (): string => {
+/** getAccessToken：读取当前平台访问令牌。 */
+export const getAccessToken = (): string => {
     try {
         return accessTokenProvider?.() || "";
     } catch {

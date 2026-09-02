@@ -13,7 +13,6 @@ import type {
   StartIterationBodyRequest,
   StartIterationHeaderRequest,
   StartIteration200Response,
-  StartIteration201Response,
   DeleteCategoryByIdBodyRequest,
   DeleteCategoryByIdHeaderRequest,
   DeleteCategoryById200Response,
@@ -172,7 +171,7 @@ export default class CAMServiceService<T> {
   StartIterationPOST(
     req: StartIterationBodyRequest & StartIterationHeaderRequest,
     options?: T,
-  ): Promise<StartIteration200Response & StartIteration201Response> {
+  ): Promise<StartIteration200Response> {
     const _req = req || {};
     let url = this.genBaseURL('/v1/service/startIteration');
     const method = 'POST';
