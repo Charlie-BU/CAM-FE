@@ -1,10 +1,10 @@
 import { Descriptions, IconCommon, Space } from "@cloud-materials/common";
 
-import type { ApiDetail, ApiDraftDetail, ApiLevel } from "@/services/api/types";
+import type { GetApiById200ResponseApi } from "@/cam-auto-generate/CAMService/namespaces";
 import { genApiLevelTag, formatDateOrDateTime, userAvatar } from "@/utils";
-import type { UserProfile } from "@/services/user/types";
+import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
 
-const BriefInfo = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
+const BriefInfo = (props: { apiDetail: GetApiById200ResponseApi }) => {
     const { apiDetail } = props;
     const apiBriefInfo = [
         {
@@ -13,11 +13,11 @@ const BriefInfo = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
         },
         {
             label: "接口 Owner",
-            value: userAvatar([apiDetail.owner] as UserProfile[], 25),
+            value: userAvatar([apiDetail.owner] as GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[], 25),
         },
         {
             label: "接口等级",
-            value: genApiLevelTag(apiDetail.level as ApiLevel, "small"),
+            value: genApiLevelTag(apiDetail.level as "P0" | "P1" | "P2" | "P3" | "P4", "small"),
         },
         {
             label: "创建时间",

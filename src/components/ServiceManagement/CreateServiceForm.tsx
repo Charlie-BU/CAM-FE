@@ -1,10 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Form, Input } from "@cloud-materials/common";
-import type { UserProfile } from "@/services/user/types";
+import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
 import { userAvatar } from "@/utils";
 
-const CreateServiceForm: React.FC<{ owner?: UserProfile }> = ({ owner }) => {
+const CreateServiceForm: React.FC<{ owner?: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem }> = ({ owner }) => {
     const { i18n, t } = useTranslation();
     const currentLanguage = i18n.resolvedLanguage;
 
@@ -59,7 +59,7 @@ const CreateServiceForm: React.FC<{ owner?: UserProfile }> = ({ owner }) => {
                     },
                 ]}
             >
-                {userAvatar([owner] as UserProfile[], 30)}
+                {userAvatar(owner ? [owner] : [], 30)}
             </Form.Item>
             <Form.Item
                 label={t("service.description")}

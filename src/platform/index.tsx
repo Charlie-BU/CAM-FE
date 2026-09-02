@@ -1,9 +1,9 @@
 import { createContext, useContext } from "react";
 import type { PropsWithChildren } from "react";
-import type { UserProfile } from "@/services/user/types";
+import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
 
 export interface PlatformContextValue {
-    user: UserProfile | null;
+    user: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem | null;
     accessToken: string;
     apiBase: string;
     locale: string;

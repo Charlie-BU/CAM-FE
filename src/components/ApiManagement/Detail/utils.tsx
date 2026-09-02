@@ -1,4 +1,4 @@
-import type { ParamType } from "@/services/api/types";
+type ParamType = "string" | "int" | "double" | "boolean" | "array" | "object" | "binary";
 import { Tag } from "@cloud-materials/common";
 
 export const getParamTypeTag = (

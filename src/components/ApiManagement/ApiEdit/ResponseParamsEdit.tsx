@@ -11,7 +11,7 @@ import {
     Popconfirm,
 } from "@cloud-materials/common";
 
-import type { ResponseParam, ResponseParamDraft } from "@/services/api/types";
+import type { ParamItem } from "./types";
 import ParamTable from "./ParamTable";
 import MultiTypeParamHint from "./MultiTypeParamHint";
 import { handleConfirm } from "@/utils";
@@ -25,10 +25,8 @@ const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
     const newStatusCodeRef = useRef("");
     const userEditedTabsRef = useRef(false); // 用户是否手动编辑过tab
 
-    const responseParamsByStatusCode: Record<
-        number,
-        ResponseParam[] | ResponseParamDraft[]
-    > = Form.useWatch("response_params_by_status_code") || {};
+    const responseParamsByStatusCode: Record<number, ParamItem[]> =
+        Form.useWatch("response_params_by_status_code") || {};
 
     // Sort keys numerically
     const statusCodes: string[] = useMemo(

@@ -8,8 +8,10 @@ import Header from "./Header";
 import ApiList from "./ApiList";
 import ApiEdit from "./ApiEdit";
 import { Layout, Spin } from "@cloud-materials/common";
-import type { UserProfile } from "@/services/user/types";
-import type { AiApiProposal } from "@/services/ai/types";
+import type {
+    GenerateApiProposal200ResponseProposal1,
+    GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem,
+} from "@/cam-auto-generate/CAMService/namespaces";
 import { inIterationWarning } from "@/utils";
 
 const ApiManagement: React.FC = () => {
@@ -38,25 +40,28 @@ const ApiManagement: React.FC = () => {
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
-        return "service_uuid" in serviceDetail
-            ? serviceDetail.service_uuid
-            : serviceDetail?.service?.service_uuid || "";
+        if ("service_uuid" in serviceDetail) {
+            return serviceDetail.service_uuid || "";
+        }
+        return "service" in serviceDetail
+            ? serviceDetail.service.service_uuid
+            : "";
     }, [serviceDetail]);
 
     const personInCharge = useMemo(() => {
         return "owner" in serviceDetail
-            ? (serviceDetail.owner as UserProfile)
+            ? (serviceDetail.owner as GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem)
             : "creator" in serviceDetail
-            ? (serviceDetail.creator as UserProfile)
-            : ({} as UserProfile);
+            ? (serviceDetail.creator as GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem)
+            : ({} as GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem);
     }, [serviceDetail]);
 
     // 用于控制当前 API 相关逻辑
     const [selectedApiId, setSelectedApiId] = useState<number>(-1);
     const [aiPrefill, setAiPrefill] = useState<{
         apiDraftId: number;
-        reqParams: AiApiProposal["req_params"];
-        respParams: AiApiProposal["resp_params"];
+        reqParams: GenerateApiProposal200ResponseProposal1["req_params"];
+        respParams: GenerateApiProposal200ResponseProposal1["resp_params"];
     } | null>(null);
 
     const { loading: apiLoading, apiDetail } = useApi(
@@ -104,7 +109,7 @@ const ApiManagement: React.FC = () => {
                     personInCharge={personInCharge}
                     maintainers={
                         "maintainers" in serviceDetail
-                            ? (serviceDetail.maintainers as UserProfile[])
+                            ? (serviceDetail.maintainers as GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[])
                             : []
                     }
                     inIteration={inIteration}

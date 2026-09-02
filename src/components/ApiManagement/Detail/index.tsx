@@ -2,7 +2,7 @@ import { Space, Typography, Divider, Spin } from "@cloud-materials/common";
 
 import styles from "../index.module.less";
 import { genApiMethodTag } from "@/utils";
-import type { ApiDetail, ApiDraftDetail } from "@/services/api/types";
+import type { GetApiById200ResponseApi } from "@/cam-auto-generate/CAMService/namespaces";
 import BriefInfo from "./BriefInfo";
 import RequestParams from "./RequestParams";
 import ResponseParams from "./ResponseParams";
@@ -12,7 +12,7 @@ const { Title } = Typography;
 
 const Detail: React.FC<{
     loading: boolean;
-    apiDetail: ApiDetail | ApiDraftDetail;
+    apiDetail: GetApiById200ResponseApi;
 }> = (props) => {
     const { loading, apiDetail } = props;
 
@@ -33,7 +33,7 @@ const Detail: React.FC<{
             <div className={styles.header}>
                 <Title heading={5} className={styles.pathTitle}>
                     <Space size={10}>
-                        {genApiMethodTag(apiDetail?.method, "medium")}
+                        {genApiMethodTag(apiDetail?.method as "GET" | "POST" | "PUT" | "DELETE" | "PATCH", "medium")}
                         {apiDetail.path}
                     </Space>
                 </Title>

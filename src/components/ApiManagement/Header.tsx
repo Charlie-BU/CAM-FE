@@ -16,8 +16,8 @@ import {
 } from "@cloud-materials/common";
 
 import styles from "./index.module.less";
-import type { UserProfile, UserRole } from "@/services/user/types";
-import { copyToClipboard, genUserRoleTag, userAvatar } from "@/utils";
+import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
+import { copyToClipboard, genUserRoleTag, type UserRole, userAvatar } from "@/utils";
 import { useUser } from "@/hooks/useUser";
 import { usePlatform } from "@/platform";
 
@@ -39,8 +39,8 @@ interface HeaderProps {
     versions: { version: string; is_latest: boolean }[];
     isLatest: boolean;
     currentVersion: string;
-    personInCharge: UserProfile;
-    maintainers: UserProfile[];
+    personInCharge: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem;
+    maintainers: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[];
     inIteration: boolean;
     handlers: HeaderHandlers;
 }
@@ -76,9 +76,9 @@ const Header: React.FC<HeaderProps> = (props) => {
     fetchUserRef.current = getUserByUsernameOrNicknameOrEmail;
 
     const [maintainersHere, setMaintainersHere] =
-        useState<UserProfile[]>(maintainers);
+        useState<GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[]>(maintainers);
     const [maintainerOptions, setMaintainerOptions] = useState<
-        { label: React.ReactNode; value: UserProfile }[]
+        { label: React.ReactNode; value: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem }[]
     >([]);
 
     useEffect(() => {
@@ -153,7 +153,7 @@ const Header: React.FC<HeaderProps> = (props) => {
     // 切换服务维护人
     const [switchLoading, setSwitchLoading] = useState(false);
     const handleAddOrRemoveServiceMaintainer = async (
-        maintainer: UserProfile,
+        maintainer: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem,
     ) => {
         setSwitchLoading(true);
         const isCurrentMaintainer =
@@ -178,7 +178,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             acc[role].push(user);
             return acc;
         },
-        {} as Record<UserRole, UserProfile[]>,
+        {} as Record<UserRole, GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[]>,
     );
 
     // 服务相关人员按role分类展示

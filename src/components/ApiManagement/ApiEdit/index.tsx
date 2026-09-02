@@ -18,14 +18,15 @@ import {
     validateMultiTypeParamRules,
 } from "./utils";
 import type {
-    ApiDetail,
-    ApiDraftDetail,
     ApiReqParamInput,
     ApiRespParamInput,
     ParamLocation,
-    UpdateApiByApiDraftIdRequest,
-    UpdateApiByApiDraftIdResponse,
-} from "@/services/api/types";
+} from "./types";
+import type {
+    GenerateApiProposal200ResponseProposal1,
+    GetApiById200ResponseApi,
+    UpdateApiByApiDraftId200Response,
+} from "@/cam-auto-generate/CAMService/namespaces";
 import RequestParamsEdit from "./RequestParamsEdit";
 import ResponseParamsEdit from "./ResponseParamsEdit";
 import { handleConfirm } from "@/utils";
@@ -42,19 +43,28 @@ export const tabs = [
 
 interface ApiEditHandlers {
     handleSaveApiDraft: (
-        data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">
-    ) => Promise<UpdateApiByApiDraftIdResponse>;
+        data: {
+            api_draft_id: number;
+            name: string;
+            method: string;
+            path: string;
+            description: string;
+            level: string;
+            req_params: ApiReqParamInput[];
+            resp_params: ApiRespParamInput[];
+        }
+    ) => Promise<UpdateApiByApiDraftId200Response>;
     handleCopyApi: (apiDraftId: number) => Promise<void>;
     handleDeleteApi: (apiDraftId: number) => Promise<void>;
 }
 
 interface ApiEditProps {
     loading: boolean;
-    apiDetail: ApiDetail | ApiDraftDetail;
+    apiDetail: GetApiById200ResponseApi;
     aiPrefill?: {
         apiDraftId: number;
-        reqParams: ApiReqParamInput[];
-        respParams: ApiRespParamInput[];
+        reqParams: GenerateApiProposal200ResponseProposal1["req_params"];
+        respParams: GenerateApiProposal200ResponseProposal1["resp_params"];
     } | null;
     handlers: ApiEditHandlers;
 }
@@ -206,7 +216,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                 }
             }
 
-            const data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id"> =
+            const data =
             {
                 api_draft_id: apiDetail.id,
                 name: values.name,

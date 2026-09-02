@@ -8,12 +8,9 @@ import {
 } from "@cloud-materials/common";
 
 import type {
-    ApiDetail,
-    ApiDraftDetail,
-    ParamType,
-    ResponseParam,
-    ResponseParamDraft,
-} from "@/services/api/types";
+    GetApiById200ResponseApi,
+    GetApiById200ResponseApiResponse_params_by_status_code200Item,
+} from "@/cam-auto-generate/CAMService/namespaces";
 import { genStatusCodeTag } from "@/utils";
 import styles from "../index.module.less";
 import { getParamTypeTag } from "./utils";
@@ -25,7 +22,7 @@ const responseColumns = [
         title: "参数名称",
         dataIndex: "name",
         width: 160,
-        render: (v: string, record: ResponseParam | ResponseParamDraft) => {
+        render: (v: string, record: GetApiById200ResponseApiResponse_params_by_status_code200Item) => {
             const childrenParams = record.children_params || [];
             if (!childrenParams || childrenParams.length === 0) {
                 return v;
@@ -39,7 +36,7 @@ const responseColumns = [
                     <Popover
                         trigger="click"
                         content={
-                            <Table<ResponseParam | ResponseParamDraft>
+                            <Table<GetApiById200ResponseApiResponse_params_by_status_code200Item>
                                 pagination={false}
                                 columns={responseColumns as any}
                                 rowKey="name"
@@ -64,8 +61,8 @@ const responseColumns = [
         title: "参数类型",
         dataIndex: "type",
         width: 150,
-        render: (v: ParamType, record: ResponseParam | ResponseParamDraft) =>
-            getParamTypeTag(v, record.array_child_type ?? undefined),
+        render: (v: string, record: GetApiById200ResponseApiResponse_params_by_status_code200Item) =>
+            getParamTypeTag(v as never, record.array_child_type as never),
     },
     {
         title: "是否必填",
@@ -87,18 +84,17 @@ const responseColumns = [
     { title: "示例值", dataIndex: "example", placeholder: "-" },
 ];
 
-const ResponseParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
+const ResponseParams = (props: { apiDetail: GetApiById200ResponseApi }) => {
     const { apiDetail } = props;
-    const responseParamsByStatusCode: Record<
+    // 后端按状态码动态返回字段；CAM 当前仅生成了 200 属性，保留运行时完整映射。
+    const responseParamsByStatusCode = apiDetail.response_params_by_status_code as unknown as Record<
         number,
-        ResponseParam[] | ResponseParamDraft[]
-    > = apiDetail.response_params_by_status_code || {};
+        GetApiById200ResponseApiResponse_params_by_status_code200Item[]
+    >;
     const existCodes: number[] = Object.keys(responseParamsByStatusCode)
-        .filter(
-            (status) => responseParamsByStatusCode[Number(status)]?.length > 0
-        )
+        .filter((status) => responseParamsByStatusCode[Number(status)]?.length > 0)
         .map(Number)
-        .sort((a, b) => a - b); // Object.keys()自动将key转换为string，需要手动转换为number，并排序
+        .sort((a, b) => a - b);
 
     return (
         <Space direction="vertical" size={12}>
@@ -108,7 +104,7 @@ const ResponseParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
             {existCodes.map((code) => (
                 <Space direction="vertical" size={8} key={code}>
                     <Text>状态码：{genStatusCodeTag(code)}</Text>
-                    <Table<ResponseParam | ResponseParamDraft>
+                    <Table<GetApiById200ResponseApiResponse_params_by_status_code200Item>
                         pagination={false}
                         columns={responseColumns as any}
                         rowKey="name"
