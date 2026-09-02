@@ -8,12 +8,9 @@ import {
 } from "@cloud-materials/common";
 
 import type {
-    ApiDetail,
-    ApiDraftDetail,
-    ParamType,
-    RequestParam,
-    RequestParamDraft,
-} from "@/services/api/types";
+    GetApiById200ResponseApi,
+    GetApiById200ResponseApiRequest_params_by_locationQueryItem,
+} from "@/cam-auto-generate/CAMService/namespaces";
 import styles from "../index.module.less";
 import { getParamTypeTag } from "./utils";
 
@@ -24,7 +21,7 @@ const requestColumns = [
         title: "参数名称",
         dataIndex: "name",
         width: 160,
-        render: (v: string, record: RequestParam | RequestParamDraft) => {
+        render: (v: string, record: GetApiById200ResponseApiRequest_params_by_locationQueryItem) => {
             const childrenParams = record.children_params || [];
             if (!childrenParams || childrenParams.length === 0) {
                 return v;
@@ -38,7 +35,7 @@ const requestColumns = [
                     <Popover
                         trigger="click"
                         content={
-                            <Table<RequestParam | RequestParamDraft>
+                            <Table<GetApiById200ResponseApiRequest_params_by_locationQueryItem>
                                 pagination={false}
                                 columns={requestColumns as any}
                                 rowKey="name"
@@ -63,8 +60,8 @@ const requestColumns = [
         title: "参数类型",
         dataIndex: "type",
         width: 150,
-        render: (v: ParamType, record: RequestParam | RequestParamDraft) =>
-            getParamTypeTag(v, record.array_child_type ?? undefined),
+        render: (v: string, record: GetApiById200ResponseApiRequest_params_by_locationQueryItem) =>
+            getParamTypeTag(v as never, record.array_child_type as never),
     },
     {
         title: "是否必填",
@@ -92,13 +89,10 @@ const requestColumns = [
     { title: "示例值", dataIndex: "example", width: 200, placeholder: "-" },
 ];
 
-const RequestParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
+const RequestParams = (props: { apiDetail: GetApiById200ResponseApi }) => {
     const { apiDetail } = props;
-    const requestParamsByLocation: Record<
-        string,
-        RequestParam[] | RequestParamDraft[]
-    > = apiDetail.request_params_by_location || {};
-    const existLocations = Object.keys(requestParamsByLocation).filter(
+    const requestParamsByLocation = apiDetail.request_params_by_location;
+    const existLocations = (Object.keys(requestParamsByLocation) as Array<keyof typeof requestParamsByLocation>).filter(
         (location) => requestParamsByLocation[location]?.length > 0
     );
 
@@ -110,7 +104,7 @@ const RequestParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
             {existLocations.includes("query") && (
                 <Space direction="vertical" size={8}>
                     <Text>Query 参数</Text>
-                    <Table<RequestParam | RequestParamDraft>
+                    <Table<GetApiById200ResponseApiRequest_params_by_locationQueryItem>
                         pagination={false}
                         columns={requestColumns as any}
                         rowKey="name"
@@ -122,7 +116,7 @@ const RequestParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
             {existLocations.includes("path") && (
                 <Space direction="vertical" size={8}>
                     <Text>Path 参数</Text>
-                    <Table<RequestParam | RequestParamDraft>
+                    <Table<GetApiById200ResponseApiRequest_params_by_locationQueryItem>
                         pagination={false}
                         columns={requestColumns as any}
                         rowKey="name"
@@ -134,7 +128,7 @@ const RequestParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
             {existLocations.includes("body") && (
                 <Space direction="vertical" size={8}>
                     <Text>Body 参数</Text>
-                    <Table<RequestParam | RequestParamDraft>
+                    <Table<GetApiById200ResponseApiRequest_params_by_locationQueryItem>
                         pagination={false}
                         columns={requestColumns as any}
                         rowKey="name"
@@ -146,7 +140,7 @@ const RequestParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
             {existLocations.includes("header") && (
                 <Space direction="vertical" size={8}>
                     <Text>Header 参数</Text>
-                    <Table<RequestParam | RequestParamDraft>
+                    <Table<GetApiById200ResponseApiRequest_params_by_locationQueryItem>
                         pagination={false}
                         columns={requestColumns as any}
                         rowKey="name"
@@ -158,7 +152,7 @@ const RequestParams = (props: { apiDetail: ApiDetail | ApiDraftDetail }) => {
             {existLocations.includes("cookie") && (
                 <Space direction="vertical" size={8}>
                     <Text>Cookie 参数</Text>
-                    <Table<RequestParam | RequestParamDraft>
+                    <Table<GetApiById200ResponseApiRequest_params_by_locationQueryItem>
                         pagination={false}
                         columns={requestColumns as any}
                         rowKey="name"

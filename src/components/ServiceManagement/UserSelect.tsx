@@ -2,13 +2,13 @@ import { useState } from "react";
 import debounce from "lodash/debounce";
 import { useTranslation } from "react-i18next";
 import { Message, Select, Space, Spin } from "@cloud-materials/common";
-import type { UserProfile, UserRole } from "@/services/user/types";
-import { genUserRoleTag } from "@/utils";
+import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
+import { genUserRoleTag, type UserRole } from "@/utils";
 
 const UserSelect: React.FC<{
     getUserByUsernameOrNicknameOrEmail: (
         value: string
-    ) => Promise<UserProfile[]>;
+    ) => Promise<GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[]>;
     onSelectId: (id: number) => void;
 }> = ({ getUserByUsernameOrNicknameOrEmail, onSelectId }) => {
     const { t } = useTranslation();

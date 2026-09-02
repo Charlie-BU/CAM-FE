@@ -12,7 +12,7 @@ import {
 import styles from "./index.module.less";
 import { useService } from "@/hooks/useService";
 import type { ServiceRange } from "@/hooks/useService";
-import type { UserProfile } from "@/services/user/types";
+import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
 import ServiceList from "./ServiceList";
 import UserSelect from "./UserSelect";
 import { WelcomeLoggedIn } from "./WelcomeView";
@@ -20,10 +20,10 @@ import { WelcomeLoggedIn } from "./WelcomeView";
 const { Title } = Typography;
 
 const LoggedInView: React.FC<{
-    user: UserProfile;
+    user: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem;
     getUserByUsernameOrNicknameOrEmail: (
         username_or_nickname_or_email: string
-    ) => Promise<UserProfile[]>;
+    ) => Promise<GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[]>;
 }> = ({ user, getUserByUsernameOrNicknameOrEmail }) => {
     const { t } = useTranslation();
     const [serviceRange, setServiceRange] =

@@ -7,8 +7,20 @@ import {
     Message,
 } from "@cloud-materials/common";
 import { t } from "i18next";
-import type { ApiLevel, HttpMethod } from "./services/api/types";
-import type { UserProfile, UserRole } from "./services/user/types";
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+type ApiLevel = "P0" | "P1" | "P2" | "P3" | "P4";
+import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "./cam-auto-generate/CAMService/namespaces";
+export type UserRole =
+    | "frontend"
+    | "backend"
+    | "fullstack"
+    | "qa"
+    | "devops"
+    | "product_manager"
+    | "designer"
+    | "architect"
+    | "proj_lead"
+    | "guest";
 
 const pad = (n: number, length = 2) => String(n).padStart(length, "0");
 
@@ -103,7 +115,7 @@ export const handleConfirm = (
 };
 
 export const userAvatar = (
-    users: UserProfile[],
+    users: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[],
     size: number,
     maxCount: number = 5,
 ) => {

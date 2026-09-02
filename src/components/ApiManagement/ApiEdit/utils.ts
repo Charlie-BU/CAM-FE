@@ -1,10 +1,8 @@
 import type {
-    ApiReqParamInput,
-    ApiRespParamInput,
-    ParamLocation,
-    ParamType,
-} from "@/services/api/types";
-import type { ParamItem } from "./types";
+    GenerateApiProposal200ResponseProposal1Req_paramsItem,
+    GenerateApiProposal200ResponseProposal1Resp_paramsItem,
+} from "@/cam-auto-generate/CAMService/namespaces";
+import type { ApiReqParamInput, ApiRespParamInput, ParamItem, ParamLocation, ParamType } from "./types";
 
 export const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -180,7 +178,7 @@ export const transformRespParamsToApiInput = (
 type FormParamItem = ParamItem & { children_params?: FormParamItem[] };
 
 const transformReqParamToFormItem = (
-    param: ApiReqParamInput,
+    param: GenerateApiProposal200ResponseProposal1Req_paramsItem,
 ): FormParamItem => ({
     id: generateId(),
     name: param.name,
@@ -195,7 +193,7 @@ const transformReqParamToFormItem = (
 });
 
 const transformRespParamToFormItem = (
-    param: ApiRespParamInput,
+    param: GenerateApiProposal200ResponseProposal1Resp_paramsItem,
 ): FormParamItem => ({
     id: generateId(),
     name: param.name,
@@ -209,7 +207,7 @@ const transformRespParamToFormItem = (
 });
 
 export const transformAiReqParamsToFormValues = (
-    params: ApiReqParamInput[],
+    params: GenerateApiProposal200ResponseProposal1Req_paramsItem[],
 ): Record<ParamLocation, FormParamItem[]> => {
     const result: Record<ParamLocation, FormParamItem[]> = {
         query: [],
@@ -219,7 +217,7 @@ export const transformAiReqParamsToFormValues = (
         body: [],
     };
     params.forEach((param) => {
-        const location = param.location;
+        const location = param.location as ParamLocation;
         if (location) {
             result[location].push(transformReqParamToFormItem(param));
         }
@@ -228,7 +226,7 @@ export const transformAiReqParamsToFormValues = (
 };
 
 export const transformAiRespParamsToFormValues = (
-    params: ApiRespParamInput[],
+    params: GenerateApiProposal200ResponseProposal1Resp_paramsItem[],
 ): Record<string, FormParamItem[]> => {
     return params.reduce<Record<string, FormParamItem[]>>((result, param) => {
         const statusCode = String(param.status_code ?? 200);

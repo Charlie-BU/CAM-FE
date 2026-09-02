@@ -20,10 +20,13 @@ import type {
     GetHisNewestServicesByOwnerId200Response,
     GetHisNewestServicesByOwnerId200ResponseServicesItem,
     GetIterationById200ResponseIteration,
+    GenerateApiProposal200ResponseProposal1,
     GetServiceByUuidAndVersion200Response,
     GetServiceByUuidAndVersion200ResponseService,
     GetServiceByUuidAndVersion200ResponseServiceApi_categoriesItem,
     GetServiceByUuidAndVersion200ResponseServiceApisItem,
+    GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem,
+    UpdateApiByApiDraftId200Response,
 } from "@/cam-auto-generate/CAMService/namespaces";
 import {
     CAMService,
@@ -31,7 +34,6 @@ import {
     readOptions,
 } from "@/services/CAMService";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
-import type { UserProfile } from "@/services/user/types";
 import { genApiMethodTag } from "@/utils";
 import AddCategoryForm from "@/components/ApiManagement/ApiList/AddCategoryForm";
 import AddApiForm from "@/components/ApiManagement/ApiList/AddApiForm";
@@ -40,24 +42,8 @@ import SmartCreateApiForm, {
 } from "@/components/ApiManagement/ApiList/SmartCreateApiForm";
 import { IconAiLine } from "@cloud-materials/common/ve-o-iconbox";
 
-import {
-    AddApi,
-    AddCategoryByServiceId,
-    CopyApiByApiDraftId,
-    DeleteApiByApiDraftId,
-    DeleteCategoryById,
-    UpdateApiByApiDraftId,
-    UpdateApiCategoryById,
-} from "@/services/api";
-import { GenerateApiProposal } from "@/services/ai";
-import type { AiApiProposal } from "@/services/ai/types";
 import CompleteIterationForm from "@/components/ApiManagement/ApiList/CompleteIterationForm";
-import type {
-    AddApiRequest,
-    HttpMethod,
-    UpdateApiByApiDraftIdRequest,
-    UpdateApiByApiDraftIdResponse,
-} from "@/services/api/types";
+import type { ApiReqParamInput, ApiRespParamInput } from "@/components/ApiManagement/ApiEdit/types";
 
 const { Text, Ellipsis } = Typography;
 
@@ -321,7 +307,7 @@ export const useService = () => {
     }, []);
 
     const handleCreateService = useCallback(
-        (owner?: UserProfile) => {
+        (owner?: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem) => {
             const modal = CModal.openArcoForm({
                 title: t("service.create"),
                 content: <CreateServiceForm owner={owner} />,
@@ -542,7 +528,7 @@ export const useThisService = (service_uuid: string) => {
                 key: api.id.toString(),
                 title: (
                     <Space style={{ fontWeight: 500 }}>
-                        {genApiMethodTag(api.method as HttpMethod, "small")}
+                        {genApiMethodTag(api.method as "GET" | "POST" | "PUT" | "DELETE" | "PATCH", "small")}
                         {api.name}
                         <Ellipsis
                             style={{
@@ -586,11 +572,11 @@ export const useThisService = (service_uuid: string) => {
             onOk: async (values, form) => {
                 try {
                     await form.validate();
-                    const res = await AddCategoryByServiceId({
+                    const res = await CAMService.AddCategoryByServiceIdPOST({
                         service_id: serviceDetail.id,
                         category_name: values.category_name,
                         description: values.description,
-                    });
+                    } as never);
                     if (res.status !== 200) {
                         throw new Error(res.message || "分类添加失败");
                     }
@@ -616,10 +602,10 @@ export const useThisService = (service_uuid: string) => {
     const handleUpdateApiCategory = useCallback(
         async (api_id: number, category_id: number) => {
             try {
-                const res = await UpdateApiCategoryById({
+                const res = await CAMService.UpdateApiCategoryByIdPOST({
                     api_id,
                     category_id,
-                });
+                } as never);
                 if (res.status !== 200) {
                     throw new Error(res.message || "API 分类更新失败");
                 }
@@ -648,7 +634,7 @@ export const useThisService = (service_uuid: string) => {
     const handleDeleteCategory = useCallback(
         async (category_id: number) => {
             try {
-                const res = await DeleteCategoryById({ category_id });
+                const res = await CAMService.DeleteCategoryByIdPOST({ category_id } as never);
                 if (res.status !== 200) {
                     throw new Error(res.message || "分类删除失败");
                 }
@@ -889,7 +875,7 @@ export const useServiceIteration = (
                     key: apiDraft.id.toString(),
                     title: (
                         <Space style={{ fontWeight: 500 }}>
-                            {genApiMethodTag(apiDraft.method as HttpMethod, "small")}
+                            {genApiMethodTag(apiDraft.method as "GET" | "POST" | "PUT" | "DELETE" | "PATCH", "small")}
                             {apiDraft.name}
                             <Ellipsis
                                 style={{
@@ -934,7 +920,15 @@ export const useServiceIteration = (
             onOk: async (values, form) => {
                 try {
                     await form.validate();
-                    let data: AddApiRequest = {
+                    const data: {
+                        service_iteration_id: number;
+                        name: string;
+                        method: string;
+                        path: string;
+                        description: string;
+                        level: string;
+                        category_id?: number;
+                    } = {
                         service_iteration_id: iterationId,
                         name: values.name,
                         method: values.method,
@@ -945,7 +939,7 @@ export const useServiceIteration = (
                     if (values.category_id > 0) {
                         data.category_id = values.category_id;
                     }
-                    const res = await AddApi(data);
+                    const res = await CAMService.AddApiPOST(data as never);
                     if (res.status !== 200) {
                         throw new Error(res.message || "API 添加失败");
                     }
@@ -976,7 +970,7 @@ export const useServiceIteration = (
         (
             onCreated: (data: {
                 apiDraftId: number;
-                proposal: AiApiProposal;
+                proposal: GenerateApiProposal200ResponseProposal1;
             }) => void,
         ) => {
             const modal = CModal.openArcoForm({
@@ -990,10 +984,10 @@ export const useServiceIteration = (
                 onOk: async (values, form) => {
                     try {
                         await form.validate();
-                        const res = await GenerateApiProposal(
-                            iterationId,
-                            values.prompt.trim(),
-                        );
+                        const res = await CAMService.GenerateApiProposalPOST({
+                            service_iteration_id: iterationId,
+                            prompt: values.prompt.trim(),
+                        } as never, { timeout: 5 * 60 * 1000 });
                         if (res.status !== 200 || !res.proposal) {
                             throw new Error(res.message || "AI 识别失败");
                         }
@@ -1018,10 +1012,10 @@ export const useServiceIteration = (
                         }
 
                         const proposal = res.proposal;
-                        const addRes = await AddApi({
+                        const addRes = await CAMService.AddApiPOST({
                             service_iteration_id: iterationId,
                             ...proposal.add_api,
-                        });
+                        } as never);
                         if (addRes.status !== 200 || !addRes.api) {
                             throw new Error(addRes.message || "API 添加失败");
                         }
@@ -1054,10 +1048,10 @@ export const useServiceIteration = (
 
     const handleCopyApi = useCallback(
         async (apiDraftId: number) => {
-            const res = await CopyApiByApiDraftId({
+            const res = await CAMService.CopyApiByApiDraftIdPOST({
                 service_iteration_id: iterationId,
                 api_draft_id: apiDraftId,
-            });
+            } as never);
             if (res.status !== 200) {
                 throw new Error(res.message || "API 复制失败");
             }
@@ -1071,10 +1065,10 @@ export const useServiceIteration = (
 
     const handleDeleteApi = useCallback(
         async (apiDraftId: number) => {
-            const res = await DeleteApiByApiDraftId({
+            const res = await CAMService.DeleteApiByApiDraftIdPOST({
                 service_iteration_id: iterationId,
                 api_draft_id: apiDraftId,
-            });
+            } as never);
             if (res.status !== 200) {
                 throw new Error(res.message || "API 删除失败");
             }
@@ -1088,12 +1082,23 @@ export const useServiceIteration = (
 
     const handleSaveApiDraft = useCallback(
         async (
-            data: Omit<UpdateApiByApiDraftIdRequest, "service_iteration_id">,
-        ): Promise<UpdateApiByApiDraftIdResponse> => {
-            const res = await UpdateApiByApiDraftId({
+            data: {
+                api_draft_id: number;
+                name: string;
+                method: string;
+                path: string;
+                description: string;
+                level: string;
+                req_params: ApiReqParamInput[];
+                resp_params: ApiRespParamInput[];
+            },
+        ): Promise<UpdateApiByApiDraftId200Response> => {
+            const res = await CAMService.UpdateApiByApiDraftIdPOST({
                 ...data,
                 service_iteration_id: iterationId,
-            });
+                req_params: JSON.stringify(data.req_params),
+                resp_params: JSON.stringify(data.resp_params),
+            } as never);
             if (res.status !== 200) {
                 throw new Error(res.message || "API 保存失败");
             }

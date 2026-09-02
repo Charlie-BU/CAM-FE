@@ -5,6 +5,15 @@ const { CAMService, invalidateAfterSuccessfulMutation, readOptions } = vi.hoiste
     CAMService: {
         GetHisNewestServicesByOwnerIdGET: vi.fn(),
         DeleteServiceByIdPOST: vi.fn(),
+        AddApiPOST: vi.fn(),
+        AddCategoryByServiceIdPOST: vi.fn(),
+        CopyApiByApiDraftIdPOST: vi.fn(),
+        DeleteApiByApiDraftIdPOST: vi.fn(),
+        DeleteCategoryByIdPOST: vi.fn(),
+        UpdateApiByApiDraftIdPOST: vi.fn(),
+        UpdateApiCategoryByIdPOST: vi.fn(),
+        GenerateApiProposalPOST: vi.fn(),
+        GetIterationByIdGET: vi.fn(),
     },
     invalidateAfterSuccessfulMutation: vi.fn(),
     readOptions: vi.fn((options) => ({ needCache: true, ...options })),
@@ -33,16 +42,6 @@ vi.mock("@/components/ApiManagement/ApiList/SmartCreateApiForm", () => ({
     SmartCreateApiTitle: () => null,
 }));
 vi.mock("@/components/ApiManagement/ApiList/CompleteIterationForm", () => ({ default: () => null }));
-vi.mock("@/services/api", () => ({
-    AddApi: vi.fn(),
-    AddCategoryByServiceId: vi.fn(),
-    CopyApiByApiDraftId: vi.fn(),
-    DeleteApiByApiDraftId: vi.fn(),
-    DeleteCategoryById: vi.fn(),
-    UpdateApiByApiDraftId: vi.fn(),
-    UpdateApiCategoryById: vi.fn(),
-}));
-vi.mock("@/services/ai", () => ({ GenerateApiProposal: vi.fn() }));
 vi.mock("@/utils", () => ({ genApiMethodTag: vi.fn() }));
 
 import { useService } from "@/hooks/useService";
@@ -98,5 +97,43 @@ describe("useService cache integration", () => {
         await deletion;
         expect(CAMService.GetHisNewestServicesByOwnerIdGET).toHaveBeenCalledTimes(2);
         expect(result.current.serviceList).toEqual([updatedService]);
+    });
+
+    it("serializes draft parameters before saving and refreshes the iteration", async () => {
+        vi.mocked(CAMService.GetIterationByIdGET).mockResolvedValue({
+            status: 200,
+            message: "",
+            iteration: { api_drafts: [] },
+        });
+        vi.mocked(CAMService.UpdateApiByApiDraftIdPOST).mockResolvedValue({
+            status: 200,
+            message: "saved",
+        });
+        vi.mocked(invalidateAfterSuccessfulMutation).mockImplementation(async (response) => response);
+        const { useServiceIteration } = await import("@/hooks/useService");
+        const { result } = renderHook(() => useServiceIteration(7, []));
+
+        await act(async () => {
+            await result.current.handleSaveApiDraft({
+                api_draft_id: 11,
+                name: "getUser",
+                method: "GET",
+                path: "/users/{id}",
+                description: "",
+                level: "P2",
+                req_params: [{ name: "id", type: "string", location: "path" }],
+                resp_params: [{ status_code: 200, name: "id", type: "string" }],
+            });
+        });
+
+        expect(CAMService.UpdateApiByApiDraftIdPOST).toHaveBeenCalledWith(
+            expect.objectContaining({
+                service_iteration_id: 7,
+                api_draft_id: 11,
+                req_params: '[{"name":"id","type":"string","location":"path"}]',
+                resp_params: '[{"status_code":200,"name":"id","type":"string"}]',
+            }),
+        );
+        expect(CAMService.GetIterationByIdGET).toHaveBeenCalledTimes(2);
     });
 });

@@ -15,7 +15,7 @@ import {
 
 import styles from "./index.module.less";
 import { useTranslation } from "react-i18next";
-import type { UserProfile } from "@/services/user/types";
+import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
 
 const { Text } = Typography;
 
@@ -24,7 +24,7 @@ const ServiceList: React.FC<{
     range: ServiceRange;
     pagination: Pagination;
     loading: boolean;
-    user: UserProfile | null;
+    user: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem | null;
     handlePageChange: (pageSize: number, currentPage?: number) => void;
     handleViewService: (service_uuid: string) => void;
     handleDeleteService: (id: number) => Promise<void>;
@@ -79,7 +79,7 @@ const ServiceList: React.FC<{
             dataIndex: "owner_name",
             align: "center" as const,
             render: (_: any, item: ServiceListItem) => {
-                let owner: UserProfile | null = null;
+                let owner: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem | null = null;
                 if (item.owner_id === user?.id) {
                     owner = user;
                 } else if (
@@ -93,7 +93,7 @@ const ServiceList: React.FC<{
                         email: item.owner.email || "",
                     };
                 }
-                return userAvatar([owner] as UserProfile[], 30);
+                return userAvatar(owner ? [owner] : [], 30);
             },
         },
         {
