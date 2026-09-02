@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import styles from "./index.module.less";
 import { useSearchParams } from "react-router-dom";
 import { useThisService, useServiceIteration } from "@/hooks/useService";
@@ -57,16 +57,45 @@ const ApiManagement: React.FC = () => {
     }, [serviceDetail]);
 
     // 用于控制当前 API 相关逻辑
-    const [selectedApiId, setSelectedApiId] = useState<number>(-1);
+    const [selectedApi, setSelectedApi] = useState<{
+        id: number;
+        isLatest: boolean;
+    } | null>(null);
     const [aiPrefill, setAiPrefill] = useState<{
         apiDraftId: number;
         reqParams: GenerateApiProposal200ResponseProposal1["req_params"];
         respParams: GenerateApiProposal200ResponseProposal1["resp_params"];
     } | null>(null);
 
+    // 迭代结束后草稿 API 已被提交为正式数据，旧草稿 ID 不可再查询。
+    // 必须在切换回正式版本前清空选中项，避免 useApi 用旧 ID 请求并提示“Api not found”。
+    const clearIterationSelection = useCallback(() => {
+        setSelectedApi(null);
+        setAiPrefill(null);
+    }, []);
+
+    // 将 API ID 与其所属数据源一起保存。正式 API 与迭代草稿使用不同表，
+    // 不能在请求发起时再根据异步更新的 isLatest 推断其来源。
+    const selectApi = useCallback(
+        (id: number) => {
+            if (id <= 0) {
+                setSelectedApi(null);
+                return;
+            }
+            setSelectedApi({ id, isLatest: inIteration ? false : isLatest });
+        },
+        [inIteration, isLatest],
+    );
+
+    // 从面包屑退出迭代时也复用同一套清理逻辑，避免残留草稿选择状态。
+    const handleExitIteration = useCallback(() => {
+        clearIterationSelection();
+        exitIteration();
+    }, [clearIterationSelection, exitIteration]);
+
     const { loading: apiLoading, apiDetail } = useApi(
-        selectedApiId,
-        inIteration ? false : isLatest // 如果在迭代中，则 isLatest 为false
+        selectedApi?.id ?? -1,
+        selectedApi?.isLatest ?? true,
     );
 
     const {
@@ -79,6 +108,16 @@ const ApiManagement: React.FC = () => {
         handleCopyApi,
         handleDeleteApi,
     } = useServiceIteration(iterationId, apiCategories);
+
+    // 迭代状态已切换但草稿详情尚未到达时，不能回退显示正式 API 树。
+    // 否则 ApiList 的自动选中会把正式 API ID 标成草稿查询。
+    const iterationReady =
+        inIteration && iterationDetail?.id === iterationId;
+    const activeTreeData = inIteration
+        ? iterationReady
+            ? iterationTreeData
+            : []
+        : treeData;
 
     const isLoading =
         loading ||
@@ -117,13 +156,13 @@ const ApiManagement: React.FC = () => {
                         setCurrentVersion: (v) =>
                             inIterationWarning(
                                 () => {
-                                    setSelectedApiId(-1);
+                                    clearIterationSelection();
                                     setCurrentVersion(v);
                                 },
                                 inIteration,
                                 "reject"
                             ),
-                        exitIteration,
+                        exitIteration: handleExitIteration,
                         checkIsServiceMaintainer,
                         handleAddOrRemoveServiceMaintainerById,
                         handleExportOpenAPI,
@@ -136,15 +175,9 @@ const ApiManagement: React.FC = () => {
                     <ApiList
                         inIteration={inIteration}
                         isLatest={isLatest}
-                        treeData={
-                            inIteration && iterationDetail
-                                ? iterationTreeData
-                                : treeData
-                        }
-                        selectedApiId={selectedApiId}
-                        setSelectedApiId={(id) => {
-                            setSelectedApiId(id);
-                        }}
+                        treeData={activeTreeData}
+                        selectedApiId={selectedApi?.id ?? -1}
+                        setSelectedApiId={selectApi}
                         handlers={{
                             handleAddApi,
                             handleSmartCreateApi: () =>
@@ -154,18 +187,25 @@ const ApiManagement: React.FC = () => {
                                         reqParams: proposal.req_params,
                                         respParams: proposal.resp_params,
                                     });
-                                    setSelectedApiId(apiDraftId);
+                                    selectApi(apiDraftId);
                                 }),
                             handleAddCategory,
                             handleUpdateApiCategory,
                             handleDeleteCategory,
-                            handleStartIteration,
-                            handleCompleteIteration,
+                            handleStartIteration: async () => {
+                                // 旧正式 API 的 ID 不能用于草稿表查询。
+                                clearIterationSelection();
+                                await handleStartIteration();
+                            },
+                            // 提交成功时先清理草稿选择，再由 Hook 刷新正式版本数据。
+                            handleCompleteIteration: () =>
+                                handleCompleteIteration(clearIterationSelection),
                         }}
                     />
                 </Layout.Sider>
                 <Layout.Content className={styles.apiContent}>
-                    {inIteration && iterationDetail ? (
+                    {inIteration ? (
+                        iterationReady ? (
                         <ApiEdit
                             loading={iterationLoading || apiLoading}
                             apiDetail={apiDetail}
@@ -176,6 +216,11 @@ const ApiManagement: React.FC = () => {
                                 handleDeleteApi,
                             }}
                         />
+                        ) : (
+                            <div className={styles.loadingCenter}>
+                                <Spin dot />
+                            </div>
+                        )
                     ) : (
                         <Detail loading={apiLoading} apiDetail={apiDetail} />
                     )}

@@ -75,6 +75,8 @@ const ApiList: React.FC<ApiListProps> = (props) => {
     useEffect(() => {
         if (selectedApiId > 0) {
             setSelectedKeys([String(selectedApiId)]);
+        } else {
+            setSelectedKeys([]);
         }
     }, [selectedApiId]);
 

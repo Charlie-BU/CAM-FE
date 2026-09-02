@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import debounce from "lodash/debounce";
 import {
     Badge,
@@ -46,6 +47,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = (props) => {
+    const navigate = useNavigate();
     const {
         loading,
         serviceUuid,
@@ -278,7 +280,15 @@ const Header: React.FC<HeaderProps> = (props) => {
             </Button> */}
             <div style={{ cursor: "default" }}>
                 <Breadcrumb>
-                    <Breadcrumb.Item href="/cam">服务列表</Breadcrumb.Item>
+                    <Breadcrumb.Item
+                        href="/cam"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            navigate("/cam");
+                        }}
+                    >
+                        服务列表
+                    </Breadcrumb.Item>
                     <Breadcrumb.Item
                         href={
                             inIteration
@@ -287,8 +297,8 @@ const Header: React.FC<HeaderProps> = (props) => {
                         }
                         onClick={
                             inIteration
-                                ? (e) => {
-                                      e.preventDefault();
+                                ? (event) => {
+                                      event.preventDefault();
                                       exitIteration();
                                   }
                                 : undefined

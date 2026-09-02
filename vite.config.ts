@@ -4,7 +4,7 @@ import { federation } from "@module-federation/vite";
 import { fileURLToPath, URL } from "node:url";
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
     const env = loadEnv(mode, process.cwd(), "VITE_");
     const apiEnv = loadEnv(mode, process.cwd(), "CAM_UPSTREAM_");
     const PORT = Number(env.VITE_FE_PORT) || 9100;
@@ -31,7 +31,11 @@ export default defineConfig(({ mode }) => {
                 },
                 shared: {
                     react: { singleton: true },
-                    "react-dom": { singleton: true },
+                    // Vite dev 的共享 facade 不暴露 createPortal 等具名导出；
+                    // 仅让生产构建共享 react-dom，避免公共组件库预构建失败。
+                    ...(command === "build"
+                        ? { "react-dom": { singleton: true } }
+                        : {}),
                     "react-router-dom": { singleton: true },
                 },
             }),

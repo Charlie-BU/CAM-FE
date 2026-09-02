@@ -19,6 +19,60 @@ import { WelcomeLoggedIn } from "./WelcomeView";
 
 const { Title } = Typography;
 
+const SERVICE_RANGE_STORAGE_KEY_PREFIX = "cam.service-range";
+
+/** getServiceRangeStorageKey：生成用户隔离的服务范围存储键。 */
+export const getServiceRangeStorageKey = (userId: number) =>
+    `${SERVICE_RANGE_STORAGE_KEY_PREFIX}.${userId}`;
+
+/** getInitialServiceRange：校验当前用户可恢复的服务范围。 */
+export const getInitialServiceRange = (
+    serviceRange: string | null,
+    user: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem,
+): ServiceRange => {
+    switch (serviceRange) {
+        case "MyMaintainedServices":
+        case "MyDeletedServices":
+            return serviceRange;
+        case "AllServices":
+            return user.level === 0 ? serviceRange : "MyServices";
+        default:
+            return "MyServices";
+    }
+};
+
+/** getStoredServiceRange：读取当前用户可用的持久化服务范围。 */
+export const getStoredServiceRange = (
+    user: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem,
+): ServiceRange => {
+    try {
+        return getInitialServiceRange(
+            window.sessionStorage.getItem(getServiceRangeStorageKey(user.id)),
+            user,
+        );
+    } catch {
+        return "MyServices";
+    }
+};
+
+/** storeServiceRange：持久化当前用户可恢复的服务范围。 */
+export const storeServiceRange = (
+    serviceRange: ServiceRange,
+    user: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem,
+) => {
+    // “His Services”还依赖当前选择的用户，暂不恢复该 Tab，避免缺少用户 ID 时发出无效请求。
+    if (serviceRange === "HisServices") return;
+    if (serviceRange === "AllServices" && user.level !== 0) return;
+    try {
+        window.sessionStorage.setItem(
+            getServiceRangeStorageKey(user.id),
+            serviceRange,
+        );
+    } catch {
+        // 隐私模式或受限环境禁止 Storage 时，保留默认的 My Services 行为。
+    }
+};
+
 const LoggedInView: React.FC<{
     user: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem;
     getUserByUsernameOrNicknameOrEmail: (
@@ -27,7 +81,7 @@ const LoggedInView: React.FC<{
 }> = ({ user, getUserByUsernameOrNicknameOrEmail }) => {
     const { t } = useTranslation();
     const [serviceRange, setServiceRange] =
-        useState<ServiceRange>("MyServices");
+        useState<ServiceRange>(() => getStoredServiceRange(user));
     const {
         serviceList,
         loading,
@@ -101,6 +155,7 @@ const LoggedInView: React.FC<{
             });
         } else {
             setServiceRange(key);
+            storeServiceRange(key, user);
             setPagination({
                 ...pagination,
                 current_page: 1,

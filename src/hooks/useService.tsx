@@ -737,7 +737,8 @@ export const useThisService = (service_uuid: string) => {
         }
     }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
 
-    const handleCompleteIteration = useCallback(async () => {
+    // onCompleted 由页面层传入，用于在提交成功后同步清理旧草稿的 UI 选择状态。
+    const handleCompleteIteration = useCallback((onCompleted?: () => void) => {
         const modal = CModal.openArcoForm({
             title: "完成迭代",
             content: <CompleteIterationForm currentVersion={currentVersion} />,
@@ -756,12 +757,18 @@ export const useThisService = (service_uuid: string) => {
                         throw new Error(res.message || "迭代提交失败");
                     }
                     Message.success(res.message || "迭代提交成功");
-                    // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
-                    // 刷新
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
+                    // 仅刷新 CAM 内容数据，保留基座和当前 SPA 路由。
+                    // 先通知页面层清空草稿 API ID，再切换迭代状态；
+                    // 否则 useApi 会带着已失效的草稿 ID 查询最新版本，产生“Api not found”提示。
+                    onCompleted?.();
+                    setInIteration(false);
+                    setIterationId(-1);
+                    setCurrentVersion(values.new_version);
+                    await Promise.all([
+                        fetchAllVersions(),
+                        fetchServiceDetail(values.new_version),
+                    ]);
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "迭代提交失败";
@@ -771,7 +778,7 @@ export const useThisService = (service_uuid: string) => {
                 }
             },
         });
-    }, [iterationId, currentVersion, fetchServiceDetail]);
+    }, [iterationId, currentVersion, fetchAllVersions, fetchServiceDetail]);
 
     const exitIteration = () => {
         setInIteration(false);
@@ -810,8 +817,8 @@ export const useServiceIteration = (
 ) => {
     const [loading, setLoading] = useState(false);
     const [iterationDetail, setIterationDetail] = useState<
-        GetIterationById200ResponseIteration
-    >({} as GetIterationById200ResponseIteration);
+        GetIterationById200ResponseIteration | null
+    >(null);
     const [apiDrafts, setApiDrafts] = useState<
         GetServiceByUuidAndVersion200ResponseServiceApisItem[]
     >([]);
@@ -822,13 +829,11 @@ export const useServiceIteration = (
         try {
             const res = await CAMService.GetIterationByIdGET({ id: iterationId } as never);
             if (res.status !== 200) {
-                setIterationDetail({} as GetIterationById200ResponseIteration);
+                setIterationDetail(null);
                 throw new Error(res.message || "获取当前迭代详情失败");
             }
-            setIterationDetail(res.iteration || {});
-            if ("api_drafts" in res.iteration) {
-                setApiDrafts(res.iteration.api_drafts || [] || []);
-            }
+            setIterationDetail(res.iteration || null);
+            setApiDrafts(res.iteration?.api_drafts || []);
         } catch (err: unknown) {
             const msg =
                 err instanceof Error ? err.message : "获取当前迭代详情失败";
@@ -839,8 +844,17 @@ export const useServiceIteration = (
     }, [iterationId]);
 
     useEffect(() => {
-        fetchIterationDetail();
-    }, [fetchIterationDetail]);
+        // 未拿到当前 iterationId 对应的草稿前，不保留旧迭代树。
+        // 否则 APIList 会在“已进入迭代、仍展示正式树”的过渡帧自动选中正式 API。
+        if (iterationId <= 0) {
+            setIterationDetail(null);
+            setApiDrafts([]);
+            return;
+        }
+        setIterationDetail(null);
+        setApiDrafts([]);
+        void fetchIterationDetail();
+    }, [iterationId, fetchIterationDetail]);
 
     const iterationTreeData = useMemo(() => {
         if (!apiCategories || !apiDrafts) {
