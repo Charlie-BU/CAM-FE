@@ -1,0 +1,7 @@
+{
+  "services": {
+    "CAMService": "infra/CAM/server@latest"
+  },
+  "outDir": "src/cam-auto-generate",
+  "generateConfig": {}
+}
