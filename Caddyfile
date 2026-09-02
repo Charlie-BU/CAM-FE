@@ -15,6 +15,15 @@
     @federation_assets path /mf-manifest.json /remoteEntry.js /assets/*
     header @federation_assets Access-Control-Allow-Origin "*"
 
+    # Build assets use content hashes, so browsers and the pedestal may retain
+    # them across deployments.  The federation entry files are deliberately
+    # revalidated: they point at the current build's hashed chunks.
+    @immutable_build_assets path /assets/*
+    header @immutable_build_assets Cache-Control "public, max-age=31536000, immutable"
+
+    @federation_entry path /mf-manifest.json /remoteEntry.js
+    header @federation_entry Cache-Control "no-cache"
+
     handle_path /api/* {
         reverse_proxy {$CAM_UPSTREAM_BASE_URL}
     }
