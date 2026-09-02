@@ -82,9 +82,9 @@ describe("CAMService cache adapter", () => {
         ).resolves.toEqual({ source: "network" });
     });
 
-    it("invalidates the current user's cache after a successful mutation", () => {
+    it("invalidates the current user's cache after a successful mutation", async () => {
         setPlatformAuth(() => "test-access-token");
-        invalidateAfterSuccessfulMutation({ status: 200 });
+        await invalidateAfterSuccessfulMutation({ status: 200 });
         expect(clearCachedResponsesForToken).toHaveBeenCalledWith("test-access-token");
     });
 });

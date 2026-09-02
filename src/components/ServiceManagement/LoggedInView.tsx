@@ -11,7 +11,7 @@ import {
 
 import styles from "./index.module.less";
 import { useService } from "@/hooks/useService";
-import type { ServiceRange } from "@/services/service/types";
+import type { ServiceRange } from "@/hooks/useService";
 import type { UserProfile } from "@/services/user/types";
 import ServiceList from "./ServiceList";
 import UserSelect from "./UserSelect";

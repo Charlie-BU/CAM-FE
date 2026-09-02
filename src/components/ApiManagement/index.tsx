@@ -38,9 +38,12 @@ const ApiManagement: React.FC = () => {
     } = useThisService(uuid);
 
     const serviceUuid = useMemo(() => {
-        return "service_uuid" in serviceDetail
-            ? serviceDetail.service_uuid
-            : serviceDetail?.service?.service_uuid || "";
+        if ("service_uuid" in serviceDetail) {
+            return serviceDetail.service_uuid || "";
+        }
+        return "service" in serviceDetail
+            ? serviceDetail.service.service_uuid
+            : "";
     }, [serviceDetail]);
 
     const personInCharge = useMemo(() => {

@@ -1,8 +1,8 @@
 import type {
     Pagination,
-    ServiceItem,
     ServiceRange,
-} from "@/services/service/types";
+    ServiceListItem,
+} from "@/hooks/useService";
 import { formatDateOrDateTime, handleConfirm, userAvatar } from "@/utils";
 import {
     Table,
@@ -20,7 +20,7 @@ import type { UserProfile } from "@/services/user/types";
 const { Text } = Typography;
 
 const ServiceList: React.FC<{
-    serviceList: ServiceItem[];
+    serviceList: ServiceListItem[];
     range: ServiceRange;
     pagination: Pagination;
     loading: boolean;
@@ -46,7 +46,7 @@ const ServiceList: React.FC<{
 
     const { t } = useTranslation();
 
-    const columns: TableColumnProps<ServiceItem>[] = [
+    const columns: TableColumnProps<ServiceListItem>[] = [
         {
             title: t("service.serviceUUID"),
             dataIndex: "service_uuid",
@@ -78,12 +78,20 @@ const ServiceList: React.FC<{
             width: 160,
             dataIndex: "owner_name",
             align: "center" as const,
-            render: (_: any, item: ServiceItem) => {
+            render: (_: any, item: ServiceListItem) => {
                 let owner: UserProfile | null = null;
                 if (item.owner_id === user?.id) {
                     owner = user;
-                } else if (item.owner_id !== user?.id && item.owner) {
-                    owner = item.owner;
+                } else if (
+                    item.owner_id !== user?.id &&
+                    "owner" in item &&
+                    item.owner
+                ) {
+                    owner = {
+                        ...item.owner,
+                        nickname: item.owner.nickname || "",
+                        email: item.owner.email || "",
+                    };
                 }
                 return userAvatar([owner] as UserProfile[], 30);
             },
@@ -152,7 +160,7 @@ const ServiceList: React.FC<{
         fixed: "right" as const,
         align: "center" as const,
 
-        render: (_: any, item: ServiceItem) => (
+        render: (_: any, item: ServiceListItem) => (
             <Space size={0} className={styles["custom-action-btn"]}>
                 {!item.is_deleted ? (
                     <>

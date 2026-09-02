@@ -70,10 +70,12 @@ export const invalidateCurrentUserCache = () =>
     clearCachedResponsesForToken(getAccessToken()).catch(() => undefined);
 
 /** invalidateAfterSuccessfulMutation：在写操作成功后失效缓存。 */
-export const invalidateAfterSuccessfulMutation = <T extends { status?: number }>(
+export const invalidateAfterSuccessfulMutation = async <T extends { status?: number }>(
     response: T,
-): T => {
-    if (response.status === 200 || response.status === 201) invalidateCurrentUserCache();
+): Promise<T> => {
+    if (response.status === 200 || response.status === 201) {
+        await invalidateCurrentUserCache();
+    }
     return response;
 };
 

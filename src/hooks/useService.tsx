@@ -9,35 +9,27 @@ import {
 } from "@cloud-materials/common";
 import { t } from "i18next";
 
-import {
-    AddOrRemoveServiceMaintainerById,
-    CommitIteration,
-    CreateNewService,
-    DeleteServiceById,
-    ExportOpenapiByUuidAndVersion,
-    GetAllDeletedServicesByUserId,
-    GetAllServices,
-    GetAllVersionsByUuid,
-    GetHisNewestServicesByOwnerId,
-    GetIterationById,
-    GetMyMaintainedServices,
-    GetMyNewestServices,
-    GetServiceByUuidAndVersion,
-    IsServiceMaintainer,
-    PermanentlyDeleteServiceById,
-    RestoreServiceById,
-    StartIteration,
-} from "@/services/service";
 import type {
-    ApiBrief,
-    ApiCategory,
-    CreateNewServiceRequest,
-    DeletedServiceItem,
-    Pagination,
-    ServiceDetail,
-    ServiceItem,
-    ServiceIterationDetail,
-} from "@/services/service/types";
+    GetAllDeletedServicesByUserId200Response,
+    GetAllDeletedServicesByUserId200ResponseDeleted_servicesItem,
+    GetAllServices200Response,
+    GetAllServices200ResponseServicesItem,
+    GetAllVersionsByUuid200Response,
+    GetHisMaintainedServicesByUserId200Response,
+    GetHisMaintainedServicesByUserId200ResponseServicesItem,
+    GetHisNewestServicesByOwnerId200Response,
+    GetHisNewestServicesByOwnerId200ResponseServicesItem,
+    GetIterationById200ResponseIteration,
+    GetServiceByUuidAndVersion200Response,
+    GetServiceByUuidAndVersion200ResponseService,
+    GetServiceByUuidAndVersion200ResponseServiceApi_categoriesItem,
+    GetServiceByUuidAndVersion200ResponseServiceApisItem,
+} from "@/cam-auto-generate/CAMService/namespaces";
+import {
+    CAMService,
+    invalidateAfterSuccessfulMutation,
+    readOptions,
+} from "@/services/CAMService";
 import CreateServiceForm from "@/components/ServiceManagement/CreateServiceForm";
 import type { UserProfile } from "@/services/user/types";
 import { genApiMethodTag } from "@/utils";
@@ -62,22 +54,38 @@ import type { AiApiProposal } from "@/services/ai/types";
 import CompleteIterationForm from "@/components/ApiManagement/ApiList/CompleteIterationForm";
 import type {
     AddApiRequest,
+    HttpMethod,
     UpdateApiByApiDraftIdRequest,
     UpdateApiByApiDraftIdResponse,
 } from "@/services/api/types";
 
 const { Text, Ellipsis } = Typography;
 
-// 服务列表hook
+/** Pagination：服务列表分页状态。 */
+export type Pagination = { page_size: number; current_page: number; total: number };
+/** ServiceRange：服务列表筛选范围。 */
+export type ServiceRange =
+    | "MyServices"
+    | "MyMaintainedServices"
+    | "HisServices"
+    | "AllServices"
+    | "MyDeletedServices";
+/** ServiceListItem：服务列表接口的统一项目类型。 */
+export type ServiceListItem =
+    | GetAllServices200ResponseServicesItem
+    | GetHisMaintainedServicesByUserId200ResponseServicesItem
+    | GetHisNewestServicesByOwnerId200ResponseServicesItem
+    | GetAllDeletedServicesByUserId200ResponseDeleted_servicesItem;
+
+// 服务列表 hook
 export const useService = () => {
     const navigate = useNavigate();
 
-    const [serviceList, setServiceList] = useState<
-        ServiceItem[] | DeletedServiceItem[]
-    >([]);
+    const [serviceList, setServiceList] = useState<ServiceListItem[]>([]);
     const [loading, setLoading] = useState(false);
     // 记录最近一次触发的获取服务操作，用于在删除、还原或新增服务后刷新列表
     const refetchRef = useRef<(() => Promise<number>) | null>(null);
+    const listRequestIdRef = useRef(0);
 
     const fetchMyNewestServices = useCallback(
         async (pagination: Pagination) => {
@@ -85,10 +93,19 @@ export const useService = () => {
             refetchRef.current = () => fetchMyNewestServices(pagination);
 
             setLoading(true);
-            const res = await GetMyNewestServices(
-                pagination.page_size,
-                pagination.current_page,
-            );
+            const requestId = ++listRequestIdRef.current;
+            const res = await CAMService.GetHisNewestServicesByOwnerIdGET({
+                is_my_services: true,
+                page_size: pagination.page_size,
+                current_page: pagination.current_page,
+            } as never, readOptions({
+                onCacheUpdated: (updatedResponse) => {
+                    const latest = updatedResponse as GetHisNewestServicesByOwnerId200Response;
+                    if (listRequestIdRef.current === requestId && latest.status === 200) {
+                        setServiceList(latest.services || []);
+                    }
+                },
+            }));
             if (res.status !== 200) {
                 // 在这里不直接通过Message提示用户的原因是，在组件层一并捕获非200未成功和请求失败错误，一并处理
                 setLoading(false);
@@ -109,10 +126,18 @@ export const useService = () => {
             refetchRef.current = () => fetchMyMaintainedServices(pagination);
 
             setLoading(true);
-            const res = await GetMyMaintainedServices(
-                pagination.page_size,
-                pagination.current_page,
-            );
+            const requestId = ++listRequestIdRef.current;
+            const res = await CAMService.GetHisMaintainedServicesByUserIdGET({
+                page_size: pagination.page_size,
+                current_page: pagination.current_page,
+            } as never, readOptions({
+                onCacheUpdated: (updatedResponse) => {
+                    const latest = updatedResponse as GetHisMaintainedServicesByUserId200Response;
+                    if (listRequestIdRef.current === requestId && latest.status === 200) {
+                        setServiceList(latest.services || []);
+                    }
+                },
+            }));
             if (res.status !== 200) {
                 setLoading(false);
                 setServiceList([]);
@@ -132,11 +157,20 @@ export const useService = () => {
                 fetchHisNewestServicesByOwnerId(ownerId, pagination);
 
             setLoading(true);
-            const res = await GetHisNewestServicesByOwnerId(
-                ownerId,
-                pagination.page_size,
-                pagination.current_page,
-            );
+            const requestId = ++listRequestIdRef.current;
+            const res = await CAMService.GetHisNewestServicesByOwnerIdGET({
+                is_my_services: false,
+                owner_id: ownerId,
+                page_size: pagination.page_size,
+                current_page: pagination.current_page,
+            } as never, readOptions({
+                onCacheUpdated: (updatedResponse) => {
+                    const latest = updatedResponse as GetHisNewestServicesByOwnerId200Response;
+                    if (listRequestIdRef.current === requestId && latest.status === 200) {
+                        setServiceList(latest.services || []);
+                    }
+                },
+            }));
             if (res.status !== 200) {
                 setLoading(false);
                 setServiceList([]);
@@ -155,10 +189,18 @@ export const useService = () => {
             refetchRef.current = () => fetchMyDeletedServices(pagination);
 
             setLoading(true);
-            const res = await GetAllDeletedServicesByUserId(
-                pagination.page_size,
-                pagination.current_page,
-            );
+            const requestId = ++listRequestIdRef.current;
+            const res = await CAMService.GetAllDeletedServicesByUserIdGET({
+                page_size: pagination.page_size,
+                current_page: pagination.current_page,
+            } as never, readOptions({
+                onCacheUpdated: (updatedResponse) => {
+                    const latest = updatedResponse as GetAllDeletedServicesByUserId200Response;
+                    if (listRequestIdRef.current === requestId && latest.status === 200) {
+                        setServiceList(latest.deleted_services || []);
+                    }
+                },
+            }));
             if (res.status !== 200) {
                 setLoading(false);
                 setServiceList([]);
@@ -176,10 +218,18 @@ export const useService = () => {
         refetchRef.current = () => fetchAllServices(pagination);
 
         setLoading(true);
-        const res = await GetAllServices(
-            pagination.page_size,
-            pagination.current_page,
-        );
+        const requestId = ++listRequestIdRef.current;
+        const res = await CAMService.GetAllServicesGET({
+            page_size: pagination.page_size,
+            current_page: pagination.current_page,
+        } as never, readOptions({
+            onCacheUpdated: (updatedResponse) => {
+                const latest = updatedResponse as GetAllServices200Response;
+                if (listRequestIdRef.current === requestId && latest.status === 200) {
+                    setServiceList(latest.services || []);
+                }
+            },
+        }));
         if (res.status !== 200) {
             setLoading(false);
             setServiceList([]);
@@ -191,8 +241,10 @@ export const useService = () => {
     }, []);
 
     const createNewService = useCallback(
-        async (formData: CreateNewServiceRequest) => {
-            const res = await CreateNewService(formData);
+        async (formData: { service_uuid: string; description: string }) => {
+            const res = await invalidateAfterSuccessfulMutation(
+                await CAMService.CreateNewServicePOST(formData as never),
+            );
             if (res.status !== 200) {
                 throw new Error(res.message || "创建服务失败");
             }
@@ -211,7 +263,9 @@ export const useService = () => {
     const handleDeleteService = useCallback(async (id: number) => {
         setLoading(true);
         try {
-            const res = await DeleteServiceById({ id });
+            const res = await invalidateAfterSuccessfulMutation(
+                await CAMService.DeleteServiceByIdPOST({ id } as never),
+            );
             if (res.status !== 200) {
                 setLoading(false);
                 throw new Error(res.message || "删除服务失败");
@@ -228,7 +282,9 @@ export const useService = () => {
 
     const handleRestoreService = useCallback(async (id: number) => {
         setLoading(true);
-        const res = await RestoreServiceById({ id });
+        const res = await invalidateAfterSuccessfulMutation(
+            await CAMService.RestoreServiceByIdPOST({ id } as never),
+        );
         if (res.status !== 200) {
             setLoading(false);
             throw new Error(res.message || "还原服务失败");
@@ -247,7 +303,9 @@ export const useService = () => {
     const handlePermanentDeleteService = useCallback(async (id: number) => {
         setLoading(true);
         try {
-            const res = await PermanentlyDeleteServiceById({ id });
+            const res = await invalidateAfterSuccessfulMutation(
+                await CAMService.DeleteServicePermanentlyByIdPOST({ id } as never),
+            );
             if (res.status !== 200) {
                 setLoading(false);
                 throw new Error(res.message || "删除服务失败");
@@ -336,21 +394,45 @@ export const useThisService = (service_uuid: string) => {
     const [currentVersion, setCurrentVersion] = useState<string>("");
     const [isLatest, setIsLatest] = useState<boolean>(true);
     const [serviceDetail, setServiceDetail] = useState<
-        ServiceDetail | ServiceIterationDetail
-    >({} as ServiceDetail);
-    const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
-    const [apis, setApis] = useState<ApiBrief[]>([]);
+        | GetServiceByUuidAndVersion200ResponseService
+        | GetIterationById200ResponseIteration
+    >({} as GetServiceByUuidAndVersion200ResponseService);
+    const [apiCategories, setApiCategories] = useState<
+        GetServiceByUuidAndVersion200ResponseServiceApi_categoriesItem[]
+    >([]);
+    const [apis, setApis] = useState<
+        GetServiceByUuidAndVersion200ResponseServiceApisItem[]
+    >([]);
 
     const fetchAllVersions = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await GetAllVersionsByUuid(service_uuid);
+            const res = await CAMService.GetAllVersionsByUuidGET({
+                service_uuid,
+            } as never, readOptions({
+                onCacheUpdated: (updatedResponse) => {
+                    const latest = updatedResponse as GetAllVersionsByUuid200Response;
+                    if (latest.status !== 200) return;
+                    const latestVersions = latest.versions.filter(
+                        (version): version is typeof version & { version: string } =>
+                            Boolean(version.version),
+                    );
+                    setVersions(latestVersions);
+                    setCurrentVersion(latest.versions[0]?.version || "");
+                    setIsLatest(latest.versions[0]?.is_latest || false);
+                },
+            }));
             if (res.status !== 200) {
                 setLoading(false);
                 setVersions([]);
                 throw new Error(res.message || "获取版本失败");
             }
-            setVersions(res.versions.filter((v) => v.version) || []); // 筛选掉正在迭代的，没有版本号的service_iteration
+            setVersions(
+                res.versions.filter(
+                    (version): version is typeof version & { version: string } =>
+                        Boolean(version.version),
+                ),
+            ); // 筛选掉正在迭代的，没有版本号的service_iteration
             setCurrentVersion(res.versions?.[0]?.version || "");
             setIsLatest(res.versions?.[0]?.is_latest || false);
         } catch (err: unknown) {
@@ -371,12 +453,31 @@ export const useThisService = (service_uuid: string) => {
         async (version: string) => {
             setLoading(true);
             try {
-                const res = await GetServiceByUuidAndVersion(
+                const res = await CAMService.GetServiceByUuidAndVersionGET({
                     service_uuid,
                     version,
-                );
+                } as never, readOptions({
+                    onCacheUpdated: (updatedResponse) => {
+                        const latest = updatedResponse as GetServiceByUuidAndVersion200Response;
+                        if (latest.status !== 200) return;
+                        setServiceDetail(latest.service || {});
+                        setIsLatest(latest.is_latest);
+                        if ("api_categories" in latest.service) {
+                            setApiCategories(latest.service.api_categories || []);
+                        }
+                        if ("apis" in latest.service || "api_drafts" in latest.service) {
+                            setApis(
+                                ("apis" in latest.service
+                                    ? latest.service.apis
+                                    : "api_drafts" in latest.service
+                                      ? latest.service.api_drafts
+                                      : []) || [],
+                            );
+                        }
+                    },
+                }));
                 if (res.status !== 200) {
-                    setServiceDetail({} as ServiceDetail);
+                    setServiceDetail({} as GetServiceByUuidAndVersion200ResponseService);
                     throw new Error(res.message || "获取服务详情失败");
                 }
                 setServiceDetail(res.service || {});
@@ -441,7 +542,7 @@ export const useThisService = (service_uuid: string) => {
                 key: api.id.toString(),
                 title: (
                     <Space style={{ fontWeight: 500 }}>
-                        {genApiMethodTag(api.method, "small")}
+                        {genApiMethodTag(api.method as HttpMethod, "small")}
                         {api.name}
                         <Ellipsis
                             style={{
@@ -493,10 +594,14 @@ export const useThisService = (service_uuid: string) => {
                     if (res.status !== 200) {
                         throw new Error(res.message || "分类添加失败");
                     }
+                    await invalidateAfterSuccessfulMutation(res);
                     Message.success(res.message || "分类添加成功");
                     // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
-                    setApiCategories((prev) => [...prev, res.category || {}]);
+                    setApiCategories((prev) => [
+                        ...prev,
+                        { ...res.category, service_id: serviceDetail.id },
+                    ]);
                 } catch (err: unknown) {
                     const msg =
                         err instanceof Error ? err.message : "分类添加失败";
@@ -518,6 +623,7 @@ export const useThisService = (service_uuid: string) => {
                 if (res.status !== 200) {
                     throw new Error(res.message || "API 分类更新失败");
                 }
+                await invalidateAfterSuccessfulMutation(res);
                 setApis((prev) =>
                     prev.map((api) =>
                         api.id === api_id
@@ -546,6 +652,7 @@ export const useThisService = (service_uuid: string) => {
                 if (res.status !== 200) {
                     throw new Error(res.message || "分类删除失败");
                 }
+                await invalidateAfterSuccessfulMutation(res);
                 Message.success(res.message || "分类删除成功");
                 setApiCategories((prev) =>
                     prev.filter((cat) => cat.id !== category_id),
@@ -561,10 +668,10 @@ export const useThisService = (service_uuid: string) => {
     const checkIsServiceMaintainer = useCallback(
         async (candidate_id: number) => {
             try {
-                const res = await IsServiceMaintainer({
-                    service_id: serviceDetail.id,
-                    candidate_id,
-                });
+            const res = await CAMService.IsServiceMaintainerGET({
+                service_id: serviceDetail.id,
+                candidate_id,
+            } as never);
                 if (res.status !== 200) {
                     throw new Error(res.message || "服务维护者检查失败");
                 }
@@ -582,10 +689,12 @@ export const useThisService = (service_uuid: string) => {
     const handleAddOrRemoveServiceMaintainerById = useCallback(
         async (candidate_id: number) => {
             try {
-                const res = await AddOrRemoveServiceMaintainerById({
+            const res = await invalidateAfterSuccessfulMutation(
+                await CAMService.AddOrRemoveServiceMaintainerByIdPOST({
                     service_id: serviceDetail.id,
                     candidate_id,
-                });
+                } as never),
+            );
                 if (res.status !== 200) {
                     throw new Error(res.message || "服务维护者操作失败");
                 }
@@ -603,11 +712,10 @@ export const useThisService = (service_uuid: string) => {
 
     const handleExportOpenAPI = useCallback(async () => {
         try {
-            const res = await ExportOpenapiByUuidAndVersion(
+            const res = await CAMService.ExportOpenapiByUuidAndVersionGET({
                 service_uuid,
-                currentVersion,
-            );
-            console.log(res);
+                version: currentVersion,
+            } as never);
             if (res.status !== 200) {
                 throw new Error(res.message || "导出 OpenAPI 失败");
             }
@@ -626,9 +734,11 @@ export const useThisService = (service_uuid: string) => {
 
     const handleStartIteration = useCallback(async () => {
         try {
-            const res = await StartIteration({
-                service_id: serviceDetail.id,
-            });
+            const res = await invalidateAfterSuccessfulMutation(
+                await CAMService.StartIterationPOST({
+                    service_id: serviceDetail.id,
+                } as never),
+            );
             if (res.status !== 200 && res.status !== 201) {
                 throw new Error(res.message || "迭代开始失败");
             }
@@ -650,10 +760,12 @@ export const useThisService = (service_uuid: string) => {
             onOk: async (values, form) => {
                 try {
                     await form.validate();
-                    const res = await CommitIteration({
-                        service_iteration_id: iterationId,
-                        new_version: values.new_version,
-                    });
+                    const res = await invalidateAfterSuccessfulMutation(
+                        await CAMService.CommitIterationPOST({
+                            service_iteration_id: iterationId,
+                            new_version: values.new_version,
+                        } as never),
+                    );
                     if (res.status !== 200) {
                         throw new Error(res.message || "迭代提交失败");
                     }
@@ -708,20 +820,23 @@ export const useThisService = (service_uuid: string) => {
 // 迭代相关（只用于一次迭代周期内，与服务历史版本无关）
 export const useServiceIteration = (
     iterationId: number,
-    apiCategories: ApiCategory[],
+    apiCategories: GetServiceByUuidAndVersion200ResponseServiceApi_categoriesItem[],
 ) => {
     const [loading, setLoading] = useState(false);
-    const [iterationDetail, setIterationDetail] =
-        useState<ServiceIterationDetail>({} as ServiceIterationDetail);
-    const [apiDrafts, setApiDrafts] = useState<ApiBrief[]>([]);
+    const [iterationDetail, setIterationDetail] = useState<
+        GetIterationById200ResponseIteration
+    >({} as GetIterationById200ResponseIteration);
+    const [apiDrafts, setApiDrafts] = useState<
+        GetServiceByUuidAndVersion200ResponseServiceApisItem[]
+    >([]);
 
     const fetchIterationDetail = useCallback(async () => {
         if (iterationId <= 0) return;
         setLoading(true);
         try {
-            const res = await GetIterationById(iterationId);
+            const res = await CAMService.GetIterationByIdGET({ id: iterationId } as never);
             if (res.status !== 200) {
-                setIterationDetail({} as ServiceIterationDetail);
+                setIterationDetail({} as GetIterationById200ResponseIteration);
                 throw new Error(res.message || "获取当前迭代详情失败");
             }
             setIterationDetail(res.iteration || {});
@@ -774,7 +889,7 @@ export const useServiceIteration = (
                     key: apiDraft.id.toString(),
                     title: (
                         <Space style={{ fontWeight: 500 }}>
-                            {genApiMethodTag(apiDraft.method, "small")}
+                            {genApiMethodTag(apiDraft.method as HttpMethod, "small")}
                             {apiDraft.name}
                             <Ellipsis
                                 style={{
@@ -834,6 +949,7 @@ export const useServiceIteration = (
                     if (res.status !== 200) {
                         throw new Error(res.message || "API 添加失败");
                     }
+                    await invalidateAfterSuccessfulMutation(res);
                     Message.success(res.message || "API 添加成功");
                     // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
@@ -909,6 +1025,7 @@ export const useServiceIteration = (
                         if (addRes.status !== 200 || !addRes.api) {
                             throw new Error(addRes.message || "API 添加失败");
                         }
+                            await invalidateAfterSuccessfulMutation(addRes);
 
                         await fetchIterationDetail();
                         modal.close();
@@ -944,6 +1061,7 @@ export const useServiceIteration = (
             if (res.status !== 200) {
                 throw new Error(res.message || "API 复制失败");
             }
+            await invalidateAfterSuccessfulMutation(res);
             Message.success(res.message || "API 复制成功");
             // 刷新
             await fetchIterationDetail();
@@ -960,6 +1078,7 @@ export const useServiceIteration = (
             if (res.status !== 200) {
                 throw new Error(res.message || "API 删除失败");
             }
+            await invalidateAfterSuccessfulMutation(res);
             Message.success(res.message || "API 删除成功");
             // 刷新
             await fetchIterationDetail();
@@ -978,6 +1097,7 @@ export const useServiceIteration = (
             if (res.status !== 200) {
                 throw new Error(res.message || "API 保存失败");
             }
+            await invalidateAfterSuccessfulMutation(res);
             // 刷新
             await fetchIterationDetail();
             return res;

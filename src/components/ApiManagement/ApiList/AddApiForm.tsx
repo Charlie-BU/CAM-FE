@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, Input, Select } from "@cloud-materials/common";
-import type { ApiCategory } from "@/services/service/types";
+import type { GetServiceByUuidAndVersion200ResponseServiceApi_categoriesItem } from "@/cam-auto-generate/CAMService/namespaces";
 import { HTTP_METHODS } from "../ApiEdit/types";
 
 interface AddApiFormProps {
-    apiCategories?: ApiCategory[];
+    apiCategories?: GetServiceByUuidAndVersion200ResponseServiceApi_categoriesItem[];
 }
 
 const AddApiForm: React.FC<AddApiFormProps> = ({ apiCategories = [] }) => {

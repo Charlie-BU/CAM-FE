@@ -1,18 +1,37 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { api } = vi.hoisted(() => ({ api: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), del: vi.fn() } }));
-vi.mock("@/request", () => ({ api }));
+const { api, getAccessToken, http } = vi.hoisted(() => ({
+    api: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), del: vi.fn() },
+    getAccessToken: vi.fn(() => ""),
+    http: { request: vi.fn().mockResolvedValue({ data: {} }) },
+}));
+vi.mock("@/request", () => ({ api, getAccessToken, http }));
 
 import { GetAllApisByServiceId, GetApiById, UpdateApiByApiDraftId } from "@/services/api";
-import { CreateNewService, GetMyNewestServices } from "@/services/service";
+import { CAMService } from "@/services/CAMService";
 
 describe("service request contracts", () => {
     beforeEach(() => vi.clearAllMocks());
     it("constructs service list and creation requests", async () => {
-        await GetMyNewestServices(20, 2);
-        await CreateNewService({ name: "test", description: "desc" } as never);
-        expect(api.get).toHaveBeenCalledWith("/v1/service/getHisNewestServicesByOwnerId", { page_size: 20, current_page: 2, is_my_services: true });
-        expect(api.post).toHaveBeenCalledWith("/v1/service/createNewService", { name: "test", description: "desc" });
+        await CAMService.GetHisNewestServicesByOwnerIdGET({
+            is_my_services: true,
+            page_size: 20,
+            current_page: 2,
+        } as never);
+        await CAMService.CreateNewServicePOST({
+            service_uuid: "service-001",
+            description: "desc",
+        } as never);
+        expect(http.request).toHaveBeenNthCalledWith(1, expect.objectContaining({
+            url: "/v1/service/getHisNewestServicesByOwnerId",
+            method: "GET",
+            params: { is_my_services: true, owner_id: undefined, page_size: 20, current_page: 2 },
+        }));
+        expect(http.request).toHaveBeenNthCalledWith(2, expect.objectContaining({
+            url: "/v1/service/createNewService",
+            method: "POST",
+            data: { service_uuid: "service-001", description: "desc" },
+        }));
     });
     it("keeps API query options and serializes draft parameter trees", async () => {
         await GetAllApisByServiceId(7, 9);
