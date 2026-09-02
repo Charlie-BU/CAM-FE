@@ -2,24 +2,12 @@ FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends git ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
 RUN corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-
-# This application consumes a private, pre-packaged offline component repository.
-# Use a fine-grained, read-only GitHub token scoped to that repository.
-ARG CLOUD_MATERIALS_GITHUB_TOKEN
-RUN test -n "${CLOUD_MATERIALS_GITHUB_TOKEN}" \
-    && git clone --depth 1 \
-    "https://x-access-token:${CLOUD_MATERIALS_GITHUB_TOKEN}@github.com/Charlie-BU/cloud-materials-common.git" \
-    ./cloud-materials-common
 
 ARG VITE_CAM_PUBLIC_BASE_URL
 ENV VITE_CAM_PUBLIC_BASE_URL=${VITE_CAM_PUBLIC_BASE_URL}

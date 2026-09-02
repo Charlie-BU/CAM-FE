@@ -7,9 +7,6 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": fileURLToPath(new URL("./src", import.meta.url)),
-            "@cloud-materials/common": fileURLToPath(
-                new URL("./cloud-materials-common/@cloud-materials/common", import.meta.url),
-            ),
         },
     },
     test: { environment: "jsdom", include: ["test/**/*.test.{ts,tsx}"], setupFiles: ["./test/setup.ts"] },

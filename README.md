@@ -11,16 +11,15 @@ React 18、TypeScript、Vite、React Router、Zustand、Axios、i18next、Less�
 - Node.js：建议使用当前 Vite 7 支持的 LTS 版本。
 - pnpm：仓库包含 `pnpm-lock.yaml`，请优先使用 pnpm。
 - 已启动的 CAM 后端服务。
-- UI 依赖 `@cloud-materials/common`。当前仓库提供 `setup-consumer.sh` 以获取配套的离线依赖仓库；拆库时建议将其改为正常的包依赖或保留该初始化步骤。
+- UI 依赖 `@cloud-materials/common` 的 GitHub Release 消费包；`pnpm install` 会按 lockfile 下载并校验该构建产物，无需访问字节内部 npm。
+
+组件库的发布与本地缓存恢复流程见 [组件库消费包文档](docs/cloud-materials-common.md)。
 
 ## 快速开始
 
 ```bash
 # 安装依赖
 pnpm install
-
-# 若本地没有 @cloud-materials/common，按需执行（参数为消费项目根目录）
-./setup-consumer.sh .
 
 # 在项目根目录创建 .env.local 并配置环境变量
 

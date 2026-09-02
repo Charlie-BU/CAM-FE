@@ -17,13 +17,7 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@cloud-materials/common": [
-        "cloud-materials-common/@cloud-materials/common"
-      ],
-      "@cloud-materials/common/*": [
-        "cloud-materials-common/@cloud-materials/common/*"
-      ]
+      "@/*": ["src/*"]
     },
 
     /* Linting */
