@@ -109,7 +109,7 @@
     "statusCode": "Status code: ",
     "emptyIterationHint": "No API yet. Start an iteration to add one.",
     "parameterName": "Parameter name",
-    "childParameters": "Child parameters",
+    "childParameters": "Children",
     "parameterType": "Parameter type",
     "type": "Type",
     "childType": "Child type",
