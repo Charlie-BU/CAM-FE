@@ -5,13 +5,18 @@ import LanguageDetector from "i18next-browser-languagedetector";
 // 导入语言资源
 import zhCN from "./locales/zh-CN.json";
 import enUS from "./locales/en-US.json";
+import { applyContentOverride, parseContentOverride } from "./contentOverride";
+
+const contentOverride = parseContentOverride(
+    import.meta.env.VITE_CONTENT_OVERRIDE,
+);
 
 const resources = {
     "zh-CN": {
-        translation: zhCN,
+        translation: applyContentOverride(zhCN, contentOverride, "zh-CN"),
     },
     "en-US": {
-        translation: enUS,
+        translation: applyContentOverride(enUS, contentOverride, "en-US"),
     },
 };
 
