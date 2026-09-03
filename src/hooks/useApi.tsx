@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Message } from "@cloud-materials/common";
+import i18n from "@/i18n";
 
 import type { GetApiById200ResponseApi } from "@/cam-auto-generate/CAMService/namespaces";
 import { CAMService, readOptions } from "@/services/CAMService";
+
+const t = i18n.t.bind(i18n);
 
 const useApi = (apiId: number, isLatest: boolean) => {
     const [loading, setLoading] = useState(false);
@@ -35,7 +38,7 @@ const useApi = (apiId: number, isLatest: boolean) => {
                 if (requestIdRef.current === requestId) {
                     setApiDetail({} as GetApiById200ResponseApi);
                 }
-                throw new Error(res.message || "获取 API 详情失败");
+                throw new Error(res.message || t("api.fetchDetailFailure"));
             }
             if (requestIdRef.current === requestId) {
                 setApiDetail(res.api || ({} as GetApiById200ResponseApi));
@@ -44,7 +47,7 @@ const useApi = (apiId: number, isLatest: boolean) => {
             if (requestIdRef.current !== requestId) return;
             setApiDetail({} as GetApiById200ResponseApi);
             const msg =
-                error instanceof Error ? error.message : "获取 API 详情失败";
+                error instanceof Error ? error.message : t("api.fetchDetailFailure");
             Message.warning(msg);
         } finally {
             if (requestIdRef.current === requestId) {

@@ -5,7 +5,7 @@ import { Form, Input } from "@cloud-materials/common";
 const CompleteIterationForm: React.FC<{ currentVersion: string }> = ({
     currentVersion,
 }) => {
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const currentLanguage = i18n.resolvedLanguage;
 
     const suggestVersionPlaceholder = useMemo(() => {
@@ -27,7 +27,7 @@ const CompleteIterationForm: React.FC<{ currentVersion: string }> = ({
         }
         const versionRegex = /^\d+\.\d+\.\d+$/;
         if (!versionRegex.test(value)) {
-            callback("版本号格式必须为 x.y.z（xyz均为非负整数）");
+            callback(t("api.versionFormatInvalid"));
             return;
         }
 
@@ -46,7 +46,7 @@ const CompleteIterationForm: React.FC<{ currentVersion: string }> = ({
             (major === currMajor && minor < currMinor) ||
             (major === currMajor && minor === currMinor && patch < currPatch)
         ) {
-            callback("新版本号不得小于当前版本号");
+            callback(t("api.versionMustNotDecrease"));
             return;
         }
         callback();
@@ -55,7 +55,7 @@ const CompleteIterationForm: React.FC<{ currentVersion: string }> = ({
     return (
         <>
             <Form.Item
-                label="新版本号"
+                label={t("api.newVersion")}
                 labelCol={currentLanguage === "en-US" ? { span: 7 } : undefined}
                 wrapperCol={
                     currentLanguage === "en-US" ? { span: 17 } : undefined
@@ -65,7 +65,7 @@ const CompleteIterationForm: React.FC<{ currentVersion: string }> = ({
                 rules={[
                     {
                         required: true,
-                        message: "请输入新版本号",
+                        message: t("api.newVersionRequired"),
                     },
                     {
                         validator: validateVersion,

@@ -30,6 +30,7 @@ CAM-FE is the CAM business frontend. It is consumed by CDI-Pedestal through Modu
 - Use `@/` aliases for source imports. Keep domain behavior in `src/services/`, request concerns in `src/request/`, stateful orchestration in hooks, and rendering in components.
 - TypeScript / React 注释：函数、类、接口、类型别名、枚举、常量、导出组件与其他必要声明前建议添加 `/** 声明名称：用途。 */` 形式的中文单行 JSDoc 注释；注释仅说明声明的功能或用途，不描述实现细节、背景或设计理由；对象属性、局部变量与简单 JSX 无需逐项注释。
 - Update both `zh-CN.json` and `en-US.json` for user-visible text.
+- 禁止在 `src/` 中直接写入用户可见文案（包括 JSX 文本、按钮/菜单标题、表单标签与占位符、弹窗/提示消息及可见错误信息）。必须通过 i18n key 读取，并同步维护 `zh-CN.json` 与 `en-US.json`；品牌名、URL、技术标识和代码注释除外。
 - Preserve async loading, error, empty, and cleanup states in interactive flows. Avoid direct backend URL construction in components.
 - Preserve existing user changes outside the requested scope. Inspect `git status` before editing and stage explicit files only when committing.
 

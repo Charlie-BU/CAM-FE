@@ -3,8 +3,8 @@ import { transformAiReqParamsToFormValues, transformReqParamsToApiInput, transfo
 
 describe("API parameter utilities", () => {
     it("rejects duplicate union members and inconsistent contracts", () => {
-        expect(validateMultiTypeParamRules([{ name: "id", type: "string", required: true, nullable: false }, { name: "id", type: "string", required: true, nullable: false }] as never, "请求参数")).toContain("不同的参数类型");
-        expect(validateMultiTypeParamRules([{ name: "id", type: "string", required: true, nullable: false }, { name: "id", type: "number", required: false, nullable: false }] as never, "请求参数")).toContain("是否必填");
+        expect(validateMultiTypeParamRules([{ name: "id", type: "string", required: true, nullable: false }, { name: "id", type: "string", required: true, nullable: false }] as never, "请求参数")).toMatch(/不同的参数类型|different types/);
+        expect(validateMultiTypeParamRules([{ name: "id", type: "string", required: true, nullable: false }, { name: "id", type: "number", required: false, nullable: false }] as never, "请求参数")).toMatch(/是否必填|required and nullable/);
     });
 
     it("normalizes path and nested parameters for API requests", () => {

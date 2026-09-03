@@ -7,6 +7,7 @@ import BriefInfo from "./BriefInfo";
 import RequestParams from "./RequestParams";
 import ResponseParams from "./ResponseParams";
 import BlankPage from "../../BlankPage";
+import { useTranslation } from "react-i18next";
 
 const { Title } = Typography;
 
@@ -14,6 +15,7 @@ const Detail: React.FC<{
     loading: boolean;
     apiDetail: GetApiById200ResponseApi;
 }> = (props) => {
+    const { t } = useTranslation();
     const { loading, apiDetail } = props;
 
     if (loading) {
@@ -25,7 +27,7 @@ const Detail: React.FC<{
     }
 
     if (!apiDetail || Object.keys(apiDetail).length === 0) {
-        return <BlankPage message="暂无 API，请发起迭代添加 API" />;
+        return <BlankPage message={t("api.emptyIterationHint")} />;
     }
 
     return (

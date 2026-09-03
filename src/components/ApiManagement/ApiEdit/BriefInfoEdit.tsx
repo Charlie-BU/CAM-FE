@@ -7,10 +7,12 @@ import {
     IconCommon,
 } from "@cloud-materials/common";
 import { HTTP_METHODS } from "./types";
+import { useTranslation } from "react-i18next";
 
 const { TextArea } = Input;
 
 const BriefInfoEdit: React.FC = () => {
+    const { t } = useTranslation();
     // 仅用作path placeholder
     const { form } = Form.useFormContext();
     const [name, setName] = useState(form.getFieldValue("name"));
@@ -18,23 +20,23 @@ const BriefInfoEdit: React.FC = () => {
     return (
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>
-                <IconCommon /> 接口信息
+                <IconCommon /> {t("api.info")}
             </div>
             <div style={{ width: "100%" }}>
                 <Form.Item
-                    label="API 名称"
+                    label={t("api.name")}
                     field="name"
                     rules={[
-                        { required: true, message: "请输入 API 名称" },
+                        { required: true, message: t("api.nameRequired") },
                         {
                             match: /^[^\u4e00-\u9fff]*$/,
-                            message: "API 名称不能包含中文",
+                            message: t("api.nameNoChinese"),
                         },
                     ]}
                     style={{ width: "50%" }}
                 >
                     <Input
-                        placeholder="请输入 API 名称"
+                        placeholder={t("api.nameRequired")}
                         maxLength={50}
                         showWordLimit
                         onChange={(value: string) => {
@@ -43,7 +45,7 @@ const BriefInfoEdit: React.FC = () => {
                     />
                 </Form.Item>
                 <Form.Item
-                    label="请求方法与路径"
+                    label={t("api.methodAndPath")}
                     required
                     style={{ width: "50%" }}
                 >
@@ -51,7 +53,7 @@ const BriefInfoEdit: React.FC = () => {
                         <Form.Item
                             field="method"
                             rules={[
-                                { required: true, message: "请选择请求方法" },
+                                { required: true, message: t("api.methodRequired") },
                             ]}
                             noStyle={{ showErrorTip: true }}
                         >
@@ -66,11 +68,11 @@ const BriefInfoEdit: React.FC = () => {
                         <Form.Item
                             field="path"
                             rules={[
-                                { required: true, message: "请输入API路径" },
-                                { match: /^\//, message: "路径必须以 / 开头" },
+                                { required: true, message: t("api.pathRequired") },
+                                { match: /^\//, message: t("api.pathMustStartWithSlash") },
                                 {
                                     match: /^[^\u4e00-\u9fff]*$/,
-                                    message: "路径不能包含中文",
+                                    message: t("api.pathNoChinese"),
                                 },
                             ]}
                             noStyle={{ showErrorTip: true }}
@@ -83,12 +85,12 @@ const BriefInfoEdit: React.FC = () => {
                     </Space>
                 </Form.Item>
                 <Form.Item
-                    label="接口等级"
+                    label={t("api.level")}
                     field="level"
-                    rules={[{ required: true, message: "请选择接口等级" }]}
+                    rules={[{ required: true, message: t("api.levelRequired") }]}
                     style={{ width: "50%" }}
                 >
-                    <Select placeholder="请选择接口等级">
+                    <Select placeholder={t("api.levelRequired")}>
                         {["P0", "P1", "P2", "P3", "P4"].map((l) => (
                             <Select.Option key={l} value={l}>
                                 {l}
@@ -97,12 +99,12 @@ const BriefInfoEdit: React.FC = () => {
                     </Select>
                 </Form.Item>
                 <Form.Item
-                    label="接口描述"
+                    label={t("api.description")}
                     field="description"
                     style={{ width: "50%" }}
                 >
                     <TextArea
-                        placeholder="请输入接口描述"
+                        placeholder={t("api.descriptionRequired")}
                         maxLength={200}
                         showWordLimit
                         autoSize={{ minRows: 3, maxRows: 5 }}

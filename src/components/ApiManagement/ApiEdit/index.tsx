@@ -31,15 +31,10 @@ import RequestParamsEdit from "./RequestParamsEdit";
 import ResponseParamsEdit from "./ResponseParamsEdit";
 import { handleConfirm } from "@/utils";
 import BlankPage from "@/components/BlankPage";
+import { useTranslation } from "react-i18next";
 
 // 把请求参数tabs相关逻辑提到本层，便于根据apiDetail处理首个activeTab
-export const tabs = [
-    { key: "query", title: "Query 参数" },
-    { key: "path", title: "Path 参数" },
-    { key: "body", title: "Body 参数" },
-    { key: "header", title: "Header 参数" },
-    { key: "cookie", title: "Cookie 参数" },
-];
+export const tabKeys = ["query", "path", "body", "header", "cookie"] as const;
 
 interface ApiEditHandlers {
     handleSaveApiDraft: (
@@ -75,6 +70,8 @@ const ApiEdit: React.FC<ApiEditProps> = ({
     aiPrefill,
     handlers: { handleSaveApiDraft, handleCopyApi, handleDeleteApi },
 }) => {
+    const { t } = useTranslation();
+    const tabs = tabKeys.map((key) => ({ key, title: t(`api.parameterLocations.${key}`) }));
     const [form] = Form.useForm();
     const [editLoading, setEditLoading] = useState(false);
     const [isDraft, setIsDraft] = useState(false);
@@ -144,7 +141,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             );
             // 检查是否有请求参数name为空
             if (req_params.some((param) => !param.name)) {
-                Message.warning("存在名称为空的请求参数");
+                Message.warning(t("api.emptyRequestParameterName"));
                 setEditLoading(false);
                 return;
             }
@@ -173,7 +170,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                 );
                 // path参数不能为选填
                 if (allPathParams.some((param) => param.required === false)) {
-                    Message.warning("Path 参数不能为选填");
+                    Message.warning(t("api.pathParameterRequired"));
                     setEditLoading(false);
                     return;
                 }
@@ -187,7 +184,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                     )
                 ) {
                     Message.warning(
-                        "Path 参数必须用花括号包含在路径中，如：{param}"
+                        t("api.pathParameterInPath")
                     );
                     setEditLoading(false);
                     return;
@@ -198,7 +195,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             );
             // 检查是否有响应参数name为空
             if (resp_params.some((param) => !param.name)) {
-                Message.warning("存在名称为空的响应参数");
+                Message.warning(t("api.emptyResponseParameterName"));
                 setEditLoading(false);
                 return;
             }
@@ -207,7 +204,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             )) {
                 const error = validateMultiTypeParamRules(
                     params as any[],
-                    `${statusCode} 响应参数`
+                    t("api.responseParametersForStatus", { statusCode })
                 );
                 if (error) {
                     Message.warning(error);
@@ -230,9 +227,9 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             try {
                 const res = await handleSaveApiDraft(data);
                 setIsDraft(false);
-                Message.success(res.message || "API 保存成功");
+                Message.success(res.message || t("api.saveSuccess"));
             } catch (error) {
-                const msg = error instanceof Error ? error.message : "API 保存失败";
+                const msg = error instanceof Error ? error.message : t("api.saveFailure");
                 Message.error(msg);
             }
         } finally {
@@ -241,7 +238,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
     };
 
     if (!apiDetail || Object.keys(apiDetail).length === 0) {
-        return <BlankPage message="暂无 API，请点击左侧 ··· 创建 API" />;
+        return <BlankPage message={t("api.emptyCreateHint")} />;
     }
 
     return (
@@ -249,7 +246,7 @@ const ApiEdit: React.FC<ApiEditProps> = ({
             <Spin size={40} loading={loading}>
                 <div className={sharedStyles.header}>
                     <Typography.Title heading={5}>
-                        Service 迭代
+                        {t("iteration.title")}
                     </Typography.Title>
                     <Space>
                         <Button
@@ -259,14 +256,14 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                             loading={editLoading}
                             disabled={!isDraft || rejectSubmit}
                         >
-                            {isDraft ? "保存 API" : "当前 API 已保存"}
+                            {isDraft ? t("api.save") : t("api.saved")}
                         </Button>
                         <Button
                             type="default"
                             status="default"
                             onClick={() => handleCopyApi(apiDetail.id)}
                         >
-                            复制 API
+                            {t("api.copy")}
                         </Button>
                         <Button
                             type="default"
@@ -274,12 +271,12 @@ const ApiEdit: React.FC<ApiEditProps> = ({
                             onClick={() =>
                                 handleConfirm(
                                     () => handleDeleteApi(apiDetail.id),
-                                    "删除",
-                                    "确认删除当前 API？"
+                                    t("common.delete"),
+                                    t("api.deleteConfirm")
                                 )
                             }
                         >
-                            删除 API
+                            {t("api.delete")}
                         </Button>
                     </Space>
                 </div>

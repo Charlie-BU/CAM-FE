@@ -3,36 +3,38 @@ import { Descriptions, IconCommon, Space } from "@cloud-materials/common";
 import type { GetApiById200ResponseApi } from "@/cam-auto-generate/CAMService/namespaces";
 import { genApiLevelTag, formatDateOrDateTime, userAvatar } from "@/utils";
 import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
+import { useTranslation } from "react-i18next";
 
 const BriefInfo = (props: { apiDetail: GetApiById200ResponseApi }) => {
+    const { t } = useTranslation();
     const { apiDetail } = props;
     const apiBriefInfo = [
         {
-            label: "接口名称",
+            label: t("api.name"),
             value: apiDetail.name,
         },
         {
-            label: "接口 Owner",
+            label: t("api.owner"),
             value: userAvatar([apiDetail.owner] as GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[], 25),
         },
         {
-            label: "接口等级",
+            label: t("api.level"),
             value: genApiLevelTag(apiDetail.level as "P0" | "P1" | "P2" | "P3" | "P4", "small"),
         },
         {
-            label: "创建时间",
+            label: t("api.createTime"),
             value: apiDetail.created_at
                 ? formatDateOrDateTime(apiDetail.created_at)
                 : "-",
         },
         {
-            label: "更新时间",
+            label: t("api.updateTime"),
             value: apiDetail.updated_at
                 ? formatDateOrDateTime(apiDetail.updated_at)
                 : "-",
         },
         {
-            label: "接口描述",
+            label: t("api.description"),
             value: apiDetail.description || "-",
         },
     ];
@@ -40,7 +42,7 @@ const BriefInfo = (props: { apiDetail: GetApiById200ResponseApi }) => {
     return (
         <Space direction="vertical" size={12}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>
-                <IconCommon /> 接口信息
+                <IconCommon /> {t("api.info")}
             </div>
             <Descriptions
                 data={apiBriefInfo}

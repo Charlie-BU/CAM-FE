@@ -21,6 +21,7 @@ import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/c
 import { copyToClipboard, genUserRoleTag, type UserRole, userAvatar } from "@/utils";
 import { useUser } from "@/hooks/useUser";
 import { usePlatform } from "@/platform";
+import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
@@ -47,6 +48,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = (props) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const {
         loading,
@@ -203,7 +205,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                         whiteSpace: "nowrap",
                     }}
                 >
-                    {serviceUuid} 相关人员
+                    {t("service.relatedMembers", { serviceUuid })}
                 </Text>
                 <Text
                     style={{
@@ -212,7 +214,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                         whiteSpace: "nowrap",
                     }}
                 >
-                    {Object.values(serviceMembersByRole).flat().length} 人
+                    {t("service.memberCount", { count: Object.values(serviceMembersByRole).flat().length })}
                 </Text>
             </div>
             <Space direction="vertical" style={{ width: "100%" }}>
@@ -287,7 +289,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                             navigate("/cam");
                         }}
                     >
-                        服务列表
+                        {t("service.list")}
                     </Breadcrumb.Item>
                     <Breadcrumb.Item
                         href={
@@ -304,10 +306,10 @@ const Header: React.FC<HeaderProps> = (props) => {
                                 : undefined
                         }
                     >
-                        服务详情
+                        {t("service.detail")}
                     </Breadcrumb.Item>
                     {inIteration && (
-                        <Breadcrumb.Item>Service 迭代</Breadcrumb.Item>
+                        <Breadcrumb.Item>{t("iteration.title")}</Breadcrumb.Item>
                     )}
                 </Breadcrumb>
             </div>
@@ -320,7 +322,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                     content={serviceMembersByRoleContent}
                     style={{ whiteSpace: "nowrap", maxWidth: "none" }}
                 >
-                    <Tooltip content="点击复制">
+                    <Tooltip content={t("common.clickToCopy")}>
                         <Text
                             style={{
                                 fontSize: 16,
@@ -353,7 +355,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                 color="green"
                                 style={{ marginRight: 8 }}
                             >
-                                最新版本
+                                {t("service.latest")}
                             </Tag>
                         ) : (
                             <Tag
@@ -361,7 +363,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                 color="blue"
                                 style={{ marginRight: 8 }}
                             >
-                                非最新版本
+                                {t("service.notLatest")}
                             </Tag>
                         )
                     }
@@ -386,7 +388,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                 </Select>
                 <span className={styles.userInfo}>
                     <Text className={styles.serviceAvatarTip}>
-                        {isLatest ? "服务" : "版本"}负责人
+                        {t(isLatest ? "service.owner" : "service.versionOwner")}
                     </Text>
                     {userAvatar([personInCharge], 32)}
                 </span>
@@ -395,7 +397,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                         <Space size={10}>
                             <span className={styles.userInfo}>
                                 <Text className={styles.serviceAvatarTip}>
-                                    服务维护者
+                                    {t("service.maintainers")}
                                 </Text>
                                 {userAvatar(maintainersHere, 32, 5)}
                             </span>
@@ -407,7 +409,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     onSearch={debounceGetMaintainerOptions}
                                     options={options}
                                     value={maintainersHere.map((m) => m.id)}
-                                    placeholder="Search by username, nickname or email"
+                                    placeholder={t("service.userSearchPlaceholder")}
                                     style={{
                                         width: 200,
                                     }}
@@ -485,7 +487,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                         onClick={exportAndDownloadOpenAPI}
                         loading={exportLoading}
                     >
-                        导出 OpenAPI
+                        {t("api.exportOpenApi")}
                     </Button>
                 </Badge>
             </Space>

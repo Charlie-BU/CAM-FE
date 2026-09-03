@@ -154,7 +154,7 @@ const ServiceList: React.FC<{
         );
     }
     columns.push({
-        title: "操作",
+        title: t("common.action"),
         key: "actions",
         width: 100,
         fixed: "right" as const,
@@ -169,7 +169,7 @@ const ServiceList: React.FC<{
                             size="small"
                             onClick={() => handleViewService(item.service_uuid)}
                         >
-                            查看
+                            {t("common.view")}
                         </Button>
                         <Button
                             type="text"
@@ -178,12 +178,12 @@ const ServiceList: React.FC<{
                             onClick={() =>
                                 handleConfirm(
                                     () => handleDeleteService(item.id),
-                                    "删除",
-                                    "确认删除当前服务？",
+                                    t("common.delete"),
+                                    t("service.deleteConfirm"),
                                 )
                             }
                         >
-                            删除
+                            {t("common.delete")}
                         </Button>
                     </>
                 ) : (
@@ -195,12 +195,12 @@ const ServiceList: React.FC<{
                             onClick={() =>
                                 handleConfirm(
                                     () => handleRestoreService(item.id),
-                                    "恢复",
-                                    "确认恢复当前服务？",
+                                    t("service.restore"),
+                                    t("service.restoreConfirm"),
                                 )
                             }
                         >
-                            恢复
+                            {t("service.restore")}
                         </Button>
                         <Button
                             type="text"
@@ -209,12 +209,12 @@ const ServiceList: React.FC<{
                             onClick={() =>
                                 handleConfirm(
                                     () => handlePermanentDeleteService(item.id),
-                                    "彻底删除",
-                                    "确认彻底删除当前服务？",
+                                    t("service.permanentlyDelete"),
+                                    t("service.permanentlyDeleteConfirm"),
                                 )
                             }
                         >
-                            彻底删除
+                            {t("service.permanentlyDelete")}
                         </Button>
                     </>
                 )}

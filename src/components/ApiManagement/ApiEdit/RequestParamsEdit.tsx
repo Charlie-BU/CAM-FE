@@ -1,7 +1,8 @@
 import { IconCommon, Space, Tabs, Form } from "@cloud-materials/common";
 import ParamTable from "./ParamTable";
 import MultiTypeParamHint from "./MultiTypeParamHint";
-import { tabs } from "./index";
+import { tabKeys } from "./index";
+import { useTranslation } from "react-i18next";
 
 interface RequestParamsEditProps {
     reqParamsActiveTab: string;
@@ -14,10 +15,12 @@ const RequestParamsEdit = ({
     setReqParamsActiveTab,
     setRejectSubmit,
 }: RequestParamsEditProps) => {
+    const { t } = useTranslation();
+    const tabs = tabKeys.map((key) => ({ key, title: t(`api.parameterLocations.${key}`) }));
     return (
         <Space direction="vertical" size={12}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>
-                <IconCommon /> 请求参数 <MultiTypeParamHint />
+                <IconCommon /> {t("api.requestParameters")} <MultiTypeParamHint />
             </div>
             <Tabs
                 activeTab={reqParamsActiveTab}

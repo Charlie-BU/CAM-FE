@@ -105,7 +105,7 @@ const LoggedInView: React.FC<{
     const handleTabChange = (key: ServiceRange) => {
         if (key === "HisServices") {
             const modal = CModal.openArcoForm({
-                title: "查看他人服务",
+                title: t("service.viewOtherServices"),
                 content: (
                     <>
                         <UserSelect
@@ -124,7 +124,7 @@ const LoggedInView: React.FC<{
                     try {
                         const selectedId = hisIdRef.current;
                         if (selectedId <= 0) {
-                            throw new Error("未选择用户");
+                            throw new Error(t("service.userRequired"));
                         }
                         setServiceRange("HisServices");
                         setPagination({
@@ -187,7 +187,7 @@ const LoggedInView: React.FC<{
                         }));
                     })
                     .catch((err) => {
-                        Message.warning(err.message || "获取服务失败");
+                        Message.warning(err.message || t("service.fetchFailure"));
                     });
                 break;
             case "MyMaintainedServices":
@@ -199,7 +199,7 @@ const LoggedInView: React.FC<{
                         }));
                     })
                     .catch((err) => {
-                        Message.warning(err.message || "获取服务失败");
+                        Message.warning(err.message || t("service.fetchFailure"));
                     });
                 break;
             case "MyDeletedServices":
@@ -211,7 +211,7 @@ const LoggedInView: React.FC<{
                         }));
                     })
                     .catch((err) => {
-                        Message.warning(err.message || "获取服务失败");
+                        Message.warning(err.message || t("service.fetchFailure"));
                     });
                 break;
             case "HisServices":
@@ -223,7 +223,7 @@ const LoggedInView: React.FC<{
                         }));
                     })
                     .catch((err) => {
-                        Message.warning(err.message || "获取服务失败");
+                        Message.warning(err.message || t("service.fetchFailure"));
                     });
                 break;
             case "AllServices":
@@ -235,7 +235,7 @@ const LoggedInView: React.FC<{
                         }));
                     })
                     .catch((err) => {
-                        Message.warning(err.message || "获取服务失败");
+                        Message.warning(err.message || t("service.fetchFailure"));
                     });
                 break;
         }

@@ -15,12 +15,14 @@ import type { ParamItem } from "./types";
 import ParamTable from "./ParamTable";
 import MultiTypeParamHint from "./MultiTypeParamHint";
 import { handleConfirm } from "@/utils";
+import { useTranslation } from "react-i18next";
 
 interface ResponseParamsEditProps {
     setRejectSubmit: (reject: boolean) => void;
 }
 
 const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
+    const { t } = useTranslation();
     const { form } = Form.useFormContext();
     const newStatusCodeRef = useRef("");
     const userEditedTabsRef = useRef(false); // 用户是否手动编辑过tab
@@ -85,15 +87,15 @@ const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
                     }
                 }
             },
-            "删除状态码",
-            "确认删除该状态码及其所有参数配置吗？"
+            t("api.deleteStatusCode"),
+            t("api.deleteStatusCodeConfirm")
         );
     };
 
     return (
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>
-                <IconCommon /> 响应参数 <MultiTypeParamHint />
+                <IconCommon /> {t("api.responseParameters")} <MultiTypeParamHint />
             </div>
             <Tabs
                 type="card"
@@ -103,11 +105,11 @@ const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
                 onChange={setActiveTab}
                 addButton={
                     <Popconfirm
-                        title="添加状态码"
+                        title={t("api.addStatusCode")}
                         content={
                             <div style={{ marginTop: 10 }}>
                                 <Input
-                                    placeholder="请输入响应状态码"
+                                    placeholder={t("api.statusCodeRequired")}
                                     onChange={(v) => {
                                         newStatusCodeRef.current = v;
                                     }}
@@ -118,15 +120,15 @@ const ResponseParamsEdit = ({ setRejectSubmit }: ResponseParamsEditProps) => {
                             userEditedTabsRef.current = true;
                             const code = newStatusCodeRef.current.trim();
                             if (!code) {
-                                Message.warning("状态码不能为空");
+                                Message.warning(t("api.statusCodeRequired"));
                                 return Promise.reject();
                             }
                             if (isNaN(Number(code))) {
-                                Message.warning("状态码必须为数字");
+                                Message.warning(t("api.statusCodeMustBeNumber"));
                                 return Promise.reject();
                             }
                             if (statusCodes.includes(code)) {
-                                Message.warning("该状态码已存在");
+                                Message.warning(t("api.statusCodeExists"));
                                 return Promise.reject();
                             }
                             const currentValues =

@@ -12,6 +12,7 @@ import { IconAiLine } from "@cloud-materials/common/ve-o-iconbox";
 
 import styles from "../index.module.less";
 import { handleConfirm, inIterationWarning } from "@/utils";
+import { useTranslation } from "react-i18next";
 
 const { Search } = Input;
 
@@ -35,6 +36,7 @@ interface ApiListProps {
 }
 
 const ApiList: React.FC<ApiListProps> = (props) => {
+    const { t } = useTranslation();
     const {
         inIteration,
         isLatest,
@@ -83,7 +85,7 @@ const ApiList: React.FC<ApiListProps> = (props) => {
     const otherOperations = (
         <Menu style={{ width: 100 }}>
             <Menu.Item key="1" onClick={handleAddCategory}>
-                添加分类
+                {t("api.addCategory")}
             </Menu.Item>
         </Menu>
     );
@@ -92,13 +94,13 @@ const ApiList: React.FC<ApiListProps> = (props) => {
         <Menu>
             <Menu.Item key="create-api" onClick={handleAddApi}>
                 <IconPlus style={{ marginRight: 8 }} />
-                创建 API
+                {t("api.create")}
             </Menu.Item>
             <Menu.Item key="smart-create-api" onClick={handleSmartCreateApi}>
                 <span className={styles.aiMenuContent}>
                     <IconAiLine className={styles.aiMenuIcon} />
                     <span className={styles.aiMenuGradientText}>
-                        智能创建 API
+                        {t("api.smartCreate")}
                     </span>
                 </span>
             </Menu.Item>
@@ -174,7 +176,7 @@ const ApiList: React.FC<ApiListProps> = (props) => {
     return (
         <div style={{ padding: 12 }}>
             <div className={styles.search}>
-                <Search allowClear placeholder="搜索 API" />
+                <Search allowClear placeholder={t("api.searchPlaceholder")} />
                 {inIteration ? (
                     <Dropdown.Button
                         type="outline"
@@ -183,7 +185,7 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                         trigger="click"
                         onClick={handleCompleteIteration}
                     >
-                        完成迭代
+                        {t("iteration.complete")}
                     </Dropdown.Button>
                 ) : (
                     isLatest && (
@@ -195,12 +197,12 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                             onClick={() =>
                                 handleConfirm(
                                     handleStartIteration,
-                                    "开始迭代",
-                                    "确认开始新的迭代？"
+                                    t("iteration.start"),
+                                    t("iteration.startConfirm")
                                 )
                             }
                         >
-                            发起迭代
+                            {t("iteration.start")}
                         </Dropdown.Button>
                     )
                 )}
@@ -239,8 +241,8 @@ const ApiList: React.FC<ApiListProps> = (props) => {
                                                         ) ?? -1
                                                     )
                                                 ),
-                                            "删除",
-                                            "确认删除当前分类？"
+                                            t("common.delete"),
+                                            t("api.deleteCategoryConfirm")
                                         )
                                     }
                                     type="outline"

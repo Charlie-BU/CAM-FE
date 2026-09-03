@@ -25,7 +25,9 @@ vi.mock("@/services/CAMService", () => ({
     readOptions,
 }));
 vi.mock("react-router-dom", () => ({ useNavigate: () => vi.fn() }));
-vi.mock("i18next", () => ({ t: (key: string) => key }));
+vi.mock("@/i18n", () => ({
+    default: { t: (key: string) => key },
+}));
 vi.mock("@cloud-materials/common", () => ({
     CModal: { openArcoForm: vi.fn() },
     Message: { success: vi.fn(), warning: vi.fn() },

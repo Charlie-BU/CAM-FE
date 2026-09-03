@@ -3,6 +3,9 @@ import type {
     GenerateApiProposal200ResponseProposal1Resp_paramsItem,
 } from "@/cam-auto-generate/CAMService/namespaces";
 import type { ApiReqParamInput, ApiRespParamInput, ParamItem, ParamLocation, ParamType } from "./types";
+import i18n from "@/i18n";
+
+const t = i18n.t.bind(i18n);
 
 export const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -87,7 +90,7 @@ export const validateMultiTypeParamRules = (
         if (sameNameParams.length > 1) {
             const types = sameNameParams.map(getParamShapeKey);
             if (new Set(types).size !== types.length) {
-                return `${scope}中同名参数「${name}」必须使用不同的参数类型`;
+                return t("api.sameNameParameterTypeConflict", { scope, name });
             }
             const first = sameNameParams[0];
             if (
@@ -97,14 +100,14 @@ export const validateMultiTypeParamRules = (
                         param.nullable !== first.nullable
                 )
             ) {
-                return `${scope}中同名参数「${name}」的是否必填和可为 null 必须一致`;
+                return t("api.sameNameParameterRequirementConflict", { scope, name });
             }
             if (
                 hasConflictingValue(sameNameParams, "description") ||
                 hasConflictingValue(sameNameParams, "default_value") ||
                 hasConflictingValue(sameNameParams, "example")
             ) {
-                return `${scope}中同名参数「${name}」的描述、默认值和示例值只能相同或仅一项有值`;
+                return t("api.sameNameParameterValueConflict", { scope, name });
             }
         }
 
@@ -112,7 +115,7 @@ export const validateMultiTypeParamRules = (
             const children = getChildren(param);
             const childError = validateMultiTypeParamRules(
                 children,
-                `${scope}的「${name}」子参数`
+                t("api.childParameterScope", { scope, name })
             );
             if (childError) return childError;
         }

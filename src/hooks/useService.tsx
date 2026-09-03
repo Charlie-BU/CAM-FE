@@ -7,7 +7,7 @@ import {
     Space,
     Popover,
 } from "@cloud-materials/common";
-import { t } from "i18next";
+import i18n from "@/i18n";
 
 import type {
     GetAllDeletedServicesByUserId200Response,
@@ -46,6 +46,7 @@ import CompleteIterationForm from "@/components/ApiManagement/ApiList/CompleteIt
 import type { ApiReqParamInput, ApiRespParamInput } from "@/components/ApiManagement/ApiEdit/types";
 
 const { Text, Ellipsis } = Typography;
+const t = i18n.t.bind(i18n);
 
 /** Pagination：服务列表分页状态。 */
 export type Pagination = { page_size: number; current_page: number; total: number };
@@ -96,7 +97,7 @@ export const useService = () => {
                 // 在这里不直接通过Message提示用户的原因是，在组件层一并捕获非200未成功和请求失败错误，一并处理
                 setLoading(false);
                 setServiceList([]);
-                throw new Error(res.message || "获取服务失败");
+                throw new Error(res.message || t("service.fetchFailure"));
             }
             setServiceList(res.services || []);
             setLoading(false);
@@ -127,7 +128,7 @@ export const useService = () => {
             if (res.status !== 200) {
                 setLoading(false);
                 setServiceList([]);
-                throw new Error(res.message || "获取服务失败");
+                throw new Error(res.message || t("service.fetchFailure"));
             }
             setServiceList(res.services || []);
             setLoading(false);
@@ -160,7 +161,7 @@ export const useService = () => {
             if (res.status !== 200) {
                 setLoading(false);
                 setServiceList([]);
-                throw new Error(res.message || "获取服务失败");
+                throw new Error(res.message || t("service.fetchFailure"));
             }
             setServiceList(res.services || []);
             setLoading(false);
@@ -190,7 +191,7 @@ export const useService = () => {
             if (res.status !== 200) {
                 setLoading(false);
                 setServiceList([]);
-                throw new Error(res.message || "获取服务失败");
+                throw new Error(res.message || t("service.fetchFailure"));
             }
             setServiceList(res.deleted_services || []);
             setLoading(false);
@@ -219,7 +220,7 @@ export const useService = () => {
         if (res.status !== 200) {
             setLoading(false);
             setServiceList([]);
-            throw new Error(res.message || "获取服务失败");
+            throw new Error(res.message || t("service.fetchFailure"));
         }
         setServiceList(res.services || []);
         setLoading(false);
@@ -232,7 +233,7 @@ export const useService = () => {
                 await CAMService.CreateNewServicePOST(formData as never),
             );
             if (res.status !== 200) {
-                throw new Error(res.message || "创建服务失败");
+                throw new Error(res.message || t("service.createFailure"));
             }
             return res;
         },
@@ -254,14 +255,14 @@ export const useService = () => {
             );
             if (res.status !== 200) {
                 setLoading(false);
-                throw new Error(res.message || "删除服务失败");
+                throw new Error(res.message || t("service.deleteFailure"));
             }
-            Message.success("删除服务成功");
+            Message.success(t("service.deleteSuccess"));
             // 刷新服务列表
             await refetchRef.current?.();
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            Message.warning(msg || "删除服务失败");
+            Message.warning(msg || t("service.deleteFailure"));
         }
         setLoading(false);
     }, []);
@@ -273,15 +274,15 @@ export const useService = () => {
         );
         if (res.status !== 200) {
             setLoading(false);
-            throw new Error(res.message || "还原服务失败");
+            throw new Error(res.message || t("service.restoreFailure"));
         }
-        Message.success("还原服务成功");
+        Message.success(t("service.restoreSuccess"));
         // 刷新服务列表
         try {
             await refetchRef.current?.();
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            Message.warning(msg || "获取服务失败");
+            Message.warning(msg || t("service.fetchFailure"));
         }
         setLoading(false);
     }, []);
@@ -294,14 +295,14 @@ export const useService = () => {
             );
             if (res.status !== 200) {
                 setLoading(false);
-                throw new Error(res.message || "删除服务失败");
+                throw new Error(res.message || t("service.deleteFailure"));
             }
-            Message.success("删除服务成功");
+            Message.success(t("service.deleteSuccess"));
             // 刷新服务列表
             await refetchRef.current?.();
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            Message.warning(msg || "删除服务失败");
+            Message.warning(msg || t("service.deleteFailure"));
         }
         setLoading(false);
     }, []);
@@ -321,9 +322,9 @@ export const useService = () => {
                             description: values.description,
                         });
                         if (res.status !== 200) {
-                            throw new Error(res.message || "服务创建失败");
+                            throw new Error(res.message || t("service.createFailure"));
                         }
-                        Message.success(res.message || "服务创建成功");
+                        Message.success(res.message || t("service.createSuccess"));
                         // 显式关闭弹窗，避免依赖隐式行为
                         modal.close();
                         // 刷新服务列表
@@ -333,12 +334,12 @@ export const useService = () => {
                             const msg =
                                 err instanceof Error
                                     ? err.message
-                                    : "获取服务失败";
-                            Message.warning(msg || "获取服务失败");
+                                    : t("service.fetchFailure");
+                            Message.warning(msg || t("service.fetchFailure"));
                         }
                     } catch (err: unknown) {
                         const msg =
-                            err instanceof Error ? err.message : "服务创建失败";
+                            err instanceof Error ? err.message : t("service.createFailure");
                         Message.warning(msg);
                         // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
                         throw err;
@@ -411,7 +412,7 @@ export const useThisService = (service_uuid: string) => {
             if (res.status !== 200) {
                 setLoading(false);
                 setVersions([]);
-                throw new Error(res.message || "获取版本失败");
+                throw new Error(res.message || t("service.fetchVersionsFailure"));
             }
             setVersions(
                 res.versions.filter(
@@ -424,7 +425,7 @@ export const useThisService = (service_uuid: string) => {
         } catch (err: unknown) {
             const msg =
                 err instanceof Error ? err.message : t("service.failure");
-            Message.warning(msg || "获取版本失败");
+            Message.warning(msg || t("service.fetchVersionsFailure"));
             navigate("/cam");
         } finally {
             setLoading(false);
@@ -464,7 +465,7 @@ export const useThisService = (service_uuid: string) => {
                 }));
                 if (res.status !== 200) {
                     setServiceDetail({} as GetServiceByUuidAndVersion200ResponseService);
-                    throw new Error(res.message || "获取服务详情失败");
+                    throw new Error(res.message || t("service.fetchDetailFailure"));
                 }
                 setServiceDetail(res.service || {});
                 setIsLatest(res.is_latest);
@@ -482,8 +483,8 @@ export const useThisService = (service_uuid: string) => {
                 }
             } catch (err: unknown) {
                 const msg =
-                    err instanceof Error ? err.message : "获取服务详情失败";
-                Message.warning(msg || "获取服务详情失败");
+                    err instanceof Error ? err.message : t("service.fetchDetailFailure");
+                Message.warning(msg || t("service.fetchDetailFailure"));
             } finally {
                 setLoading(false);
             }
@@ -517,7 +518,7 @@ export const useThisService = (service_uuid: string) => {
         });
         const uncategorizedGroup = {
             key: "category-null",
-            title: <Text>未分类</Text>,
+            title: <Text>{t("api.uncategorized")}</Text>,
             children: [] as any[],
             selectable: false,
             draggable: false,
@@ -565,10 +566,10 @@ export const useThisService = (service_uuid: string) => {
 
     const handleAddCategory = useCallback(() => {
         const modal = CModal.openArcoForm({
-            title: "添加分类",
+            title: t("api.addCategory"),
             content: <AddCategoryForm />,
             cancelText: t("common.cancel"),
-            okText: "确定",
+            okText: t("common.confirm"),
             onOk: async (values, form) => {
                 try {
                     await form.validate();
@@ -578,10 +579,10 @@ export const useThisService = (service_uuid: string) => {
                         description: values.description,
                     } as never);
                     if (res.status !== 200) {
-                        throw new Error(res.message || "分类添加失败");
+                        throw new Error(res.message || t("api.categoryCreateFailure"));
                     }
                     await invalidateAfterSuccessfulMutation(res);
-                    Message.success(res.message || "分类添加成功");
+                    Message.success(res.message || t("api.categoryCreateSuccess"));
                     // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
                     setApiCategories((prev) => [
@@ -590,7 +591,7 @@ export const useThisService = (service_uuid: string) => {
                     ]);
                 } catch (err: unknown) {
                     const msg =
-                        err instanceof Error ? err.message : "分类添加失败";
+                        err instanceof Error ? err.message : t("api.categoryCreateFailure");
                     Message.warning(msg);
                     // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
                     throw err;
@@ -607,7 +608,7 @@ export const useThisService = (service_uuid: string) => {
                     category_id,
                 } as never);
                 if (res.status !== 200) {
-                    throw new Error(res.message || "API 分类更新失败");
+                    throw new Error(res.message || t("api.categoryUpdateFailure"));
                 }
                 await invalidateAfterSuccessfulMutation(res);
                 setApis((prev) =>
@@ -623,7 +624,7 @@ export const useThisService = (service_uuid: string) => {
                 );
             } catch (err: unknown) {
                 const msg =
-                    err instanceof Error ? err.message : "API 分类更新失败";
+                    err instanceof Error ? err.message : t("api.categoryUpdateFailure");
                 Message.warning(msg);
                 throw err;
             }
@@ -636,15 +637,15 @@ export const useThisService = (service_uuid: string) => {
             try {
                 const res = await CAMService.DeleteCategoryByIdPOST({ category_id } as never);
                 if (res.status !== 200) {
-                    throw new Error(res.message || "分类删除失败");
+                    throw new Error(res.message || t("api.categoryDeleteFailure"));
                 }
                 await invalidateAfterSuccessfulMutation(res);
-                Message.success(res.message || "分类删除成功");
+                Message.success(res.message || t("api.categoryDeleteSuccess"));
                 setApiCategories((prev) =>
                     prev.filter((cat) => cat.id !== category_id),
                 );
             } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : "分类删除失败";
+                const msg = err instanceof Error ? err.message : t("api.categoryDeleteFailure");
                 Message.warning(msg);
             }
         },
@@ -659,12 +660,12 @@ export const useThisService = (service_uuid: string) => {
                 candidate_id,
             } as never);
                 if (res.status !== 200) {
-                    throw new Error(res.message || "服务维护者检查失败");
+                    throw new Error(res.message || t("service.maintainerCheckFailure"));
                 }
                 return res.is_current_maintainer;
             } catch (err: unknown) {
                 const msg =
-                    err instanceof Error ? err.message : "服务维护者检查失败";
+                    err instanceof Error ? err.message : t("service.maintainerCheckFailure");
                 Message.warning(msg);
                 return false;
             }
@@ -682,13 +683,13 @@ export const useThisService = (service_uuid: string) => {
                 } as never),
             );
                 if (res.status !== 200) {
-                    throw new Error(res.message || "服务维护者操作失败");
+                    throw new Error(res.message || t("service.maintainerOperationFailure"));
                 }
-                Message.success(res.message || "服务维护者操作成功");
+                Message.success(res.message || t("service.maintainerOperationSuccess"));
                 return res.is_current_maintainer;
             } catch (err: unknown) {
                 const msg =
-                    err instanceof Error ? err.message : "服务维护者操作失败";
+                    err instanceof Error ? err.message : t("service.maintainerOperationFailure");
                 Message.warning(msg);
                 return false;
             }
@@ -703,12 +704,12 @@ export const useThisService = (service_uuid: string) => {
                 version: currentVersion,
             } as never);
             if (res.status !== 200) {
-                throw new Error(res.message || "导出 OpenAPI 失败");
+                throw new Error(res.message || t("api.exportFailure"));
             }
             return res.openapi_object;
         } catch (err: unknown) {
             const msg =
-                err instanceof Error ? err.message : "导出 OpenAPI 失败";
+                err instanceof Error ? err.message : t("api.exportFailure");
             Message.warning(msg);
             return null;
         }
@@ -726,13 +727,13 @@ export const useThisService = (service_uuid: string) => {
                 } as never),
             );
             if (res.status !== 200 && res.status !== 201) {
-                throw new Error(res.message || "迭代开始失败");
+                throw new Error(res.message || t("iteration.startFailure"));
             }
-            Message.success(res.message || "迭代开始成功");
+            Message.success(res.message || t("iteration.startSuccess"));
             setInIteration(true);
             setIterationId(res.service_iteration_id);
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : "迭代开始失败";
+            const msg = err instanceof Error ? err.message : t("iteration.startFailure");
             Message.warning(msg);
         }
     }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
@@ -740,10 +741,10 @@ export const useThisService = (service_uuid: string) => {
     // onCompleted 由页面层传入，用于在提交成功后同步清理旧草稿的 UI 选择状态。
     const handleCompleteIteration = useCallback((onCompleted?: () => void) => {
         const modal = CModal.openArcoForm({
-            title: "完成迭代",
+            title: t("iteration.complete"),
             content: <CompleteIterationForm currentVersion={currentVersion} />,
             cancelText: t("common.cancel"),
-            okText: "确定",
+            okText: t("common.confirm"),
             onOk: async (values, form) => {
                 try {
                     await form.validate();
@@ -754,9 +755,9 @@ export const useThisService = (service_uuid: string) => {
                         } as never),
                     );
                     if (res.status !== 200) {
-                        throw new Error(res.message || "迭代提交失败");
+                        throw new Error(res.message || t("iteration.submitFailure"));
                     }
-                    Message.success(res.message || "迭代提交成功");
+                    Message.success(res.message || t("iteration.submitSuccess"));
                     modal.close();
                     // 仅刷新 CAM 内容数据，保留基座和当前 SPA 路由。
                     // 先通知页面层清空草稿 API ID，再切换迭代状态；
@@ -771,7 +772,7 @@ export const useThisService = (service_uuid: string) => {
                     ]);
                 } catch (err: unknown) {
                     const msg =
-                        err instanceof Error ? err.message : "迭代提交失败";
+                        err instanceof Error ? err.message : t("iteration.submitFailure");
                     Message.warning(msg);
                     // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
                     throw err;
@@ -830,13 +831,13 @@ export const useServiceIteration = (
             const res = await CAMService.GetIterationByIdGET({ id: iterationId } as never);
             if (res.status !== 200) {
                 setIterationDetail(null);
-                throw new Error(res.message || "获取当前迭代详情失败");
+                throw new Error(res.message || t("iteration.fetchDetailFailure"));
             }
             setIterationDetail(res.iteration || null);
             setApiDrafts(res.iteration?.api_drafts || []);
         } catch (err: unknown) {
             const msg =
-                err instanceof Error ? err.message : "获取当前迭代详情失败";
+                err instanceof Error ? err.message : t("iteration.fetchDetailFailure");
             Message.warning(msg);
         } finally {
             setLoading(false);
@@ -876,7 +877,7 @@ export const useServiceIteration = (
         });
         const uncategorizedGroup = {
             key: "category-null",
-            title: <Text>未分类</Text>,
+            title: <Text>{t("api.uncategorized")}</Text>,
             children: [] as any[],
             selectable: false,
             draggable: false,
@@ -927,10 +928,10 @@ export const useServiceIteration = (
 
     const handleAddApi = useCallback(() => {
         const modal = CModal.openArcoForm({
-            title: "添加API",
+            title: t("api.create"),
             content: <AddApiForm apiCategories={apiCategories} />,
             cancelText: t("common.cancel"),
-            okText: "确定",
+            okText: t("common.confirm"),
             onOk: async (values, form) => {
                 try {
                     await form.validate();
@@ -955,10 +956,10 @@ export const useServiceIteration = (
                     }
                     const res = await CAMService.AddApiPOST(data as never);
                     if (res.status !== 200) {
-                        throw new Error(res.message || "API 添加失败");
+                        throw new Error(res.message || t("api.createFailure"));
                     }
                     await invalidateAfterSuccessfulMutation(res);
-                    Message.success(res.message || "API 添加成功");
+                    Message.success(res.message || t("api.createSuccess"));
                     // 显式关闭弹窗，避免依赖隐式行为
                     modal.close();
                     // 刷新
@@ -971,7 +972,7 @@ export const useServiceIteration = (
                     await fetchIterationDetail();
                 } catch (err: unknown) {
                     const msg =
-                        err instanceof Error ? err.message : "API 添加失败";
+                        err instanceof Error ? err.message : t("api.createFailure");
                     Message.warning(msg);
                     // 抛出错误以阻止弹窗自动关闭（库内有相关处理）
                     throw err;
@@ -991,7 +992,7 @@ export const useServiceIteration = (
                 title: <SmartCreateApiTitle />,
                 content: <SmartCreateApiForm />,
                 cancelText: t("common.cancel"),
-                okText: "AI 识别",
+                okText: t("api.aiRecognize"),
                 okButtonProps: {
                     icon: <IconAiLine />,
                 },
@@ -1003,26 +1004,26 @@ export const useServiceIteration = (
                             prompt: values.prompt.trim(),
                         } as never, { timeout: 5 * 60 * 1000 });
                         if (res.status !== 200 || !res.proposal) {
-                            throw new Error(res.message || "AI 识别失败");
+                            throw new Error(res.message || t("api.aiRecognitionFailure"));
                         }
 
                         if ("missing_fields" in res.proposal) {
                             const fieldNames = res.proposal.missing_fields.map(
                                 (field) =>
                                     field === "method"
-                                        ? "请求方法"
-                                        : "API 路径",
+                                        ? t("api.method")
+                                        : t("api.path"),
                             );
                             Message.warning(
-                                `请补充以下信息：${fieldNames.join("、")}`,
+                                t("api.missingFields", { fields: fieldNames.join(t("common.listSeparator")) }),
                             );
-                            throw new Error("AI 识别信息不完整");
+                            throw new Error(t("api.aiIncomplete"));
                         }
                         if ("duplicate_api" in res.proposal) {
                             Message.warning(
-                                res.proposal.message || "API 已存在，不能重复创建",
+                                res.proposal.message || t("api.alreadyExists"),
                             );
-                            throw new Error("API 已存在");
+                            throw new Error(t("api.alreadyExists"));
                         }
 
                         const proposal = res.proposal;
@@ -1031,7 +1032,7 @@ export const useServiceIteration = (
                             ...proposal.add_api,
                         } as never);
                         if (addRes.status !== 200 || !addRes.api) {
-                            throw new Error(addRes.message || "API 添加失败");
+                            throw new Error(addRes.message || t("api.createFailure"));
                         }
                             await invalidateAfterSuccessfulMutation(addRes);
 
@@ -1041,13 +1042,13 @@ export const useServiceIteration = (
                             apiDraftId: addRes.api.id,
                             proposal,
                         });
-                        Message.success("API 创建成功，请补充或确认参数后手动保存");
+                        Message.success(t("api.aiCreateSuccess"));
                     } catch (err: unknown) {
                         const msg =
-                            err instanceof Error ? err.message : "AI 识别失败";
+                            err instanceof Error ? err.message : t("api.aiRecognitionFailure");
                         if (
-                            msg !== "AI 识别信息不完整" &&
-                            msg !== "API 已存在"
+                            msg !== t("api.aiIncomplete") &&
+                            msg !== t("api.alreadyExists")
                         ) {
                             Message.warning(msg);
                         }
@@ -1067,10 +1068,10 @@ export const useServiceIteration = (
                 api_draft_id: apiDraftId,
             } as never);
             if (res.status !== 200) {
-                throw new Error(res.message || "API 复制失败");
+                throw new Error(res.message || t("api.copyFailure"));
             }
             await invalidateAfterSuccessfulMutation(res);
-            Message.success(res.message || "API 复制成功");
+            Message.success(res.message || t("api.copySuccess"));
             // 刷新
             await fetchIterationDetail();
         },
@@ -1084,10 +1085,10 @@ export const useServiceIteration = (
                 api_draft_id: apiDraftId,
             } as never);
             if (res.status !== 200) {
-                throw new Error(res.message || "API 删除失败");
+                throw new Error(res.message || t("api.deleteFailure"));
             }
             await invalidateAfterSuccessfulMutation(res);
-            Message.success(res.message || "API 删除成功");
+            Message.success(res.message || t("api.deleteSuccess"));
             // 刷新
             await fetchIterationDetail();
         },
@@ -1114,7 +1115,7 @@ export const useServiceIteration = (
                 resp_params: JSON.stringify(data.resp_params),
             } as never);
             if (res.status !== 200) {
-                throw new Error(res.message || "API 保存失败");
+                throw new Error(res.message || t("api.saveFailure"));
             }
             await invalidateAfterSuccessfulMutation(res);
             // 刷新
