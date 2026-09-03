@@ -21,6 +21,8 @@ WORKDIR /srv
 # Caddy reads this value at runtime to proxy browser requests from /api.
 ARG CAM_UPSTREAM_BASE_URL
 ENV CAM_UPSTREAM_BASE_URL=${CAM_UPSTREAM_BASE_URL}
+ARG VITE_CONTENT_OVERRIDE
+ENV VITE_CONTENT_OVERRIDE=${VITE_CONTENT_OVERRIDE}
 
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /app/dist /srv
