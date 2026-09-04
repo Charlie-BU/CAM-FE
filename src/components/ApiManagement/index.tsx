@@ -36,6 +36,7 @@ const ApiManagement: React.FC = () => {
         handleExportOpenAPI,
         handleStartIteration,
         handleCompleteIteration,
+        handleDeleteIteration,
         exitIteration,
     } = useThisService(uuid);
 
@@ -166,6 +167,16 @@ const ApiManagement: React.FC = () => {
                         checkIsServiceMaintainer,
                         handleAddOrRemoveServiceMaintainerById,
                         handleExportOpenAPI,
+                        handleStartIteration: async () => {
+                            // 旧正式 API 的 ID 不能用于草稿表查询。
+                            clearIterationSelection();
+                            await handleStartIteration();
+                        },
+                        // 提交成功时先清理草稿选择，再由 Hook 刷新正式版本数据。
+                        handleCompleteIteration: () =>
+                            handleCompleteIteration(clearIterationSelection),
+                        handleDeleteIteration: () =>
+                            handleDeleteIteration(clearIterationSelection),
                     }}
                 />
             </Layout.Header>
@@ -192,14 +203,6 @@ const ApiManagement: React.FC = () => {
                             handleAddCategory,
                             handleUpdateApiCategory,
                             handleDeleteCategory,
-                            handleStartIteration: async () => {
-                                // 旧正式 API 的 ID 不能用于草稿表查询。
-                                clearIterationSelection();
-                                await handleStartIteration();
-                            },
-                            // 提交成功时先清理草稿选择，再由 Hook 刷新正式版本数据。
-                            handleCompleteIteration: () =>
-                                handleCompleteIteration(clearIterationSelection),
                         }}
                     />
                 </Layout.Sider>

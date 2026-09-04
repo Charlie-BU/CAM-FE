@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
     Tree,
     Input,
-    Dropdown,
-    Menu,
     Button,
+    Dropdown,
     IconDelete,
     IconPlus,
+    Menu,
 } from "@cloud-materials/common";
 import { IconAiLine } from "@cloud-materials/common/ve-o-iconbox";
 
@@ -22,8 +22,6 @@ interface ApiListHandlers {
     handleAddCategory: () => void;
     handleUpdateApiCategory: (apiId: number, categoryId: number) => void;
     handleDeleteCategory: (categoryId: number) => void;
-    handleStartIteration: () => void;
-    handleCompleteIteration: () => void;
 }
 
 interface ApiListProps {
@@ -52,8 +50,6 @@ const ApiList: React.FC<ApiListProps> = (props) => {
         handleAddCategory,
         handleUpdateApiCategory,
         handleDeleteCategory,
-        handleStartIteration,
-        handleCompleteIteration,
     } = handlers;
 
     const firstOptionKey = useMemo(
@@ -82,19 +78,11 @@ const ApiList: React.FC<ApiListProps> = (props) => {
         }
     }, [selectedApiId]);
 
-    const otherOperations = (
-        <Menu style={{ width: 100 }}>
-            <Menu.Item key="1" onClick={handleAddCategory}>
-                {t("api.addCategory")}
-            </Menu.Item>
-        </Menu>
-    );
-
-    const inIterationOperations = (
+    const createApiOperations = (
         <Menu>
             <Menu.Item key="create-api" onClick={handleAddApi}>
                 <IconPlus style={{ marginRight: 8 }} />
-                {t("api.create")}
+                {t("api.manualCreate")}
             </Menu.Item>
             <Menu.Item key="smart-create-api" onClick={handleSmartCreateApi}>
                 <span className={styles.aiMenuContent}>
@@ -178,34 +166,18 @@ const ApiList: React.FC<ApiListProps> = (props) => {
             <div className={styles.search}>
                 <Search allowClear placeholder={t("api.searchPlaceholder")} />
                 {inIteration ? (
-                    <Dropdown.Button
-                        type="outline"
-                        droplist={inIterationOperations}
+                    <Dropdown
+                        droplist={createApiOperations}
                         position="bl"
                         trigger="click"
-                        onClick={handleCompleteIteration}
                     >
-                        {t("iteration.complete")}
-                    </Dropdown.Button>
-                ) : (
-                    isLatest && (
-                        <Dropdown.Button
-                            type="outline"
-                            droplist={otherOperations}
-                            position="bl"
-                            trigger="click"
-                            onClick={() =>
-                                handleConfirm(
-                                    handleStartIteration,
-                                    t("iteration.start"),
-                                    t("iteration.startConfirm")
-                                )
-                            }
-                        >
-                            {t("iteration.start")}
-                        </Dropdown.Button>
-                    )
-                )}
+                        <Button type="outline">{t("api.create")}</Button>
+                    </Dropdown>
+                ) : isLatest ? (
+                    <Button type="outline" onClick={handleAddCategory}>
+                        {t("api.addCategory")}
+                    </Button>
+                ) : null}
             </div>
 
             {/* autoExpandParent只有在Tree初次挂载时生效，所以要在treeData计算完成后再渲染 */}

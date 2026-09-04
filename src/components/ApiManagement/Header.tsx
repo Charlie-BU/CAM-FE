@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import debounce from "lodash/debounce";
 import {
-    Badge,
     Breadcrumb,
     Button,
     Divider,
@@ -18,10 +17,16 @@ import {
 
 import styles from "./index.module.less";
 import type { GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem } from "@/cam-auto-generate/CAMService/namespaces";
-import { copyToClipboard, genUserRoleTag, type UserRole, userAvatar } from "@/utils";
+import {
+    copyToClipboard,
+    genUserRoleTag,
+    type UserRole,
+    userAvatar,
+} from "@/utils";
 import { useUser } from "@/hooks/useUser";
 import { usePlatform } from "@/platform";
 import { useTranslation } from "react-i18next";
+import IterationActions from "./IterationActions";
 
 const { Text } = Typography;
 
@@ -33,6 +38,9 @@ interface HeaderHandlers {
         maintainerId: number,
     ) => Promise<boolean>;
     handleExportOpenAPI: () => Promise<Record<string, any> | null>;
+    handleStartIteration: () => void;
+    handleCompleteIteration: () => void;
+    handleDeleteIteration: () => void;
 }
 
 interface HeaderProps {
@@ -65,6 +73,9 @@ const Header: React.FC<HeaderProps> = (props) => {
             checkIsServiceMaintainer,
             handleAddOrRemoveServiceMaintainerById,
             handleExportOpenAPI,
+            handleStartIteration,
+            handleCompleteIteration,
+            handleDeleteIteration,
         },
     } = props;
 
@@ -80,9 +91,14 @@ const Header: React.FC<HeaderProps> = (props) => {
     fetchUserRef.current = getUserByUsernameOrNicknameOrEmail;
 
     const [maintainersHere, setMaintainersHere] =
-        useState<GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[]>(maintainers);
+        useState<GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[]>(
+            maintainers,
+        );
     const [maintainerOptions, setMaintainerOptions] = useState<
-        { label: React.ReactNode; value: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem }[]
+        {
+            label: React.ReactNode;
+            value: GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem;
+        }[]
     >([]);
 
     useEffect(() => {
@@ -182,7 +198,10 @@ const Header: React.FC<HeaderProps> = (props) => {
             acc[role].push(user);
             return acc;
         },
-        {} as Record<UserRole, GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[]>,
+        {} as Record<
+            UserRole,
+            GetUserByUsernameOrNicknameOrEmail200ResponseUsersItem[]
+        >,
     );
 
     // 服务相关人员按role分类展示
@@ -214,7 +233,10 @@ const Header: React.FC<HeaderProps> = (props) => {
                         whiteSpace: "nowrap",
                     }}
                 >
-                    {t("service.memberCount", { count: Object.values(serviceMembersByRole).flat().length })}
+                    {t("service.memberCount", {
+                        count: Object.values(serviceMembersByRole).flat()
+                            .length,
+                    })}
                 </Text>
             </div>
             <Space direction="vertical" style={{ width: "100%" }}>
@@ -309,7 +331,9 @@ const Header: React.FC<HeaderProps> = (props) => {
                         {t("service.detail")}
                     </Breadcrumb.Item>
                     {inIteration && (
-                        <Breadcrumb.Item>{t("iteration.title")}</Breadcrumb.Item>
+                        <Breadcrumb.Item>
+                            {t("iteration.title")}
+                        </Breadcrumb.Item>
                     )}
                 </Breadcrumb>
             </div>
@@ -409,7 +433,9 @@ const Header: React.FC<HeaderProps> = (props) => {
                                     onSearch={debounceGetMaintainerOptions}
                                     options={options}
                                     value={maintainersHere.map((m) => m.id)}
-                                    placeholder={t("service.userSearchPlaceholder")}
+                                    placeholder={t(
+                                        "service.userSearchPlaceholder",
+                                    )}
                                     style={{
                                         width: 200,
                                     }}
@@ -480,16 +506,22 @@ const Header: React.FC<HeaderProps> = (props) => {
                             )}
                         </Space>
                     )}
-                <Badge text="NEW">
+                <Space size={12}>
+                    <IterationActions
+                        inIteration={inIteration}
+                        isLatest={isLatest}
+                        handleStartIteration={handleStartIteration}
+                        handleCompleteIteration={handleCompleteIteration}
+                        handleDeleteIteration={handleDeleteIteration}
+                    />
                     <Button
-                        type="default"
-                        status="success"
+                        type="outline"
                         onClick={exportAndDownloadOpenAPI}
                         loading={exportLoading}
                     >
                         {t("api.exportOpenApi")}
                     </Button>
-                </Badge>
+                </Space>
             </Space>
         </div>
     );

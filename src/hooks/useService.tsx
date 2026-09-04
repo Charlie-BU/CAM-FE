@@ -781,6 +781,39 @@ export const useThisService = (service_uuid: string) => {
         });
     }, [iterationId, currentVersion, fetchAllVersions, fetchServiceDetail]);
 
+    // onCompleted 由页面层传入，用于在删除成功后同步清理草稿 API 的 UI 选择状态。
+    const handleDeleteIteration = useCallback(
+        async (onCompleted?: () => void) => {
+            try {
+                const res = await invalidateAfterSuccessfulMutation(
+                    await CAMService.DeleteIterationByIdPOST({
+                        service_iteration_id: iterationId,
+                    } as never),
+                );
+                if (res.status !== 200) {
+                    throw new Error(
+                        res.message || t("iteration.deleteFailure"),
+                    );
+                }
+                Message.success(res.message || t("iteration.deleteSuccess"));
+                onCompleted?.();
+                setInIteration(false);
+                setIterationId(-1);
+                await Promise.all([
+                    fetchAllVersions(),
+                    fetchServiceDetail(currentVersion),
+                ]);
+            } catch (err: unknown) {
+                const msg =
+                    err instanceof Error
+                        ? err.message
+                        : t("iteration.deleteFailure");
+                Message.warning(msg);
+            }
+        },
+        [iterationId, currentVersion, fetchAllVersions, fetchServiceDetail],
+    );
+
     const exitIteration = () => {
         setInIteration(false);
         setIterationId(-1);
@@ -807,6 +840,7 @@ export const useThisService = (service_uuid: string) => {
         setInIteration,
         handleStartIteration,
         handleCompleteIteration,
+        handleDeleteIteration,
         exitIteration,
     };
 };

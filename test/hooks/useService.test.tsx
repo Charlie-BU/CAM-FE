@@ -1,7 +1,7 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const { CAMService, invalidateAfterSuccessfulMutation, readOptions } = vi.hoisted(() => ({
+const { CAMService, invalidateAfterSuccessfulMutation, navigate, readOptions } = vi.hoisted(() => ({
     CAMService: {
         GetHisNewestServicesByOwnerIdGET: vi.fn(),
         DeleteServiceByIdPOST: vi.fn(),
@@ -14,8 +14,13 @@ const { CAMService, invalidateAfterSuccessfulMutation, readOptions } = vi.hoiste
         UpdateApiCategoryByIdPOST: vi.fn(),
         GenerateApiProposalPOST: vi.fn(),
         GetIterationByIdGET: vi.fn(),
+        GetAllVersionsByUuidGET: vi.fn(),
+        GetServiceByUuidAndVersionGET: vi.fn(),
+        StartIterationPOST: vi.fn(),
+        DeleteIterationByIdPOST: vi.fn(),
     },
     invalidateAfterSuccessfulMutation: vi.fn(),
+    navigate: vi.fn(),
     readOptions: vi.fn((options) => ({ needCache: true, ...options })),
 }));
 
@@ -24,7 +29,7 @@ vi.mock("@/services/CAMService", () => ({
     invalidateAfterSuccessfulMutation,
     readOptions,
 }));
-vi.mock("react-router-dom", () => ({ useNavigate: () => vi.fn() }));
+vi.mock("react-router-dom", () => ({ useNavigate: () => navigate }));
 vi.mock("@/i18n", () => ({
     default: { t: (key: string) => key },
 }));
@@ -46,13 +51,16 @@ vi.mock("@/components/ApiManagement/ApiList/SmartCreateApiForm", () => ({
 vi.mock("@/components/ApiManagement/ApiList/CompleteIterationForm", () => ({ default: () => null }));
 vi.mock("@/utils", () => ({ genApiMethodTag: vi.fn() }));
 
-import { useService } from "@/hooks/useService";
+import { useService, useThisService } from "@/hooks/useService";
 
 const pagination = { page_size: 10, current_page: 1, total: 0 };
 const cachedService = { id: 1, service_uuid: "service-001", owner_id: 1, is_deleted: false };
 const updatedService = { id: 2, service_uuid: "service-002", owner_id: 1, is_deleted: false };
 
-afterEach(() => vi.clearAllMocks());
+afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+});
 
 describe("useService cache integration", () => {
     it("applies a background cache refresh to the current service list", async () => {
@@ -137,5 +145,78 @@ describe("useService cache integration", () => {
             }),
         );
         expect(CAMService.GetIterationByIdGET).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe("useThisService iteration deletion", () => {
+    const mockServiceReads = () => {
+        vi.mocked(CAMService.GetAllVersionsByUuidGET).mockResolvedValue({
+            status: 200,
+            message: "",
+            versions: [{ version: "1.0.0", is_latest: true }],
+        });
+        vi.mocked(CAMService.GetServiceByUuidAndVersionGET).mockResolvedValue({
+            status: 200,
+            message: "",
+            is_latest: true,
+            service: {
+                id: 1,
+                service_uuid: "service-001",
+                version: "1.0.0",
+                api_categories: [],
+                apis: [],
+            },
+        });
+        vi.mocked(CAMService.StartIterationPOST).mockResolvedValue({
+            status: 200,
+            message: "",
+            service_iteration_id: 17,
+        });
+        vi.mocked(invalidateAfterSuccessfulMutation).mockImplementation(
+            async (response) => response,
+        );
+    };
+
+    it("deletes the active iteration and returns to the current service", async () => {
+        mockServiceReads();
+        vi.mocked(CAMService.DeleteIterationByIdPOST).mockResolvedValue({
+            status: 200,
+            message: "deleted",
+        });
+        const onCompleted = vi.fn();
+        const { result } = renderHook(() => useThisService("service-001"));
+
+        await waitFor(() => expect(result.current.serviceDetail.id).toBe(1));
+        await act(async () => result.current.handleStartIteration());
+        expect(result.current.inIteration).toBe(true);
+
+        await act(async () => result.current.handleDeleteIteration(onCompleted));
+
+        expect(CAMService.DeleteIterationByIdPOST).toHaveBeenCalledWith({
+            service_iteration_id: 17,
+        });
+        expect(onCompleted).toHaveBeenCalledOnce();
+        expect(result.current.inIteration).toBe(false);
+        expect(result.current.iterationId).toBe(-1);
+        expect(CAMService.GetAllVersionsByUuidGET).toHaveBeenCalledTimes(2);
+        expect(CAMService.GetServiceByUuidAndVersionGET).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps the active iteration when deletion fails", async () => {
+        mockServiceReads();
+        vi.mocked(CAMService.DeleteIterationByIdPOST).mockResolvedValue({
+            status: -2,
+            message: "forbidden",
+        });
+        const onCompleted = vi.fn();
+        const { result } = renderHook(() => useThisService("service-001"));
+
+        await waitFor(() => expect(result.current.serviceDetail.id).toBe(1));
+        await act(async () => result.current.handleStartIteration());
+        await act(async () => result.current.handleDeleteIteration(onCompleted));
+
+        expect(onCompleted).not.toHaveBeenCalled();
+        expect(result.current.inIteration).toBe(true);
+        expect(result.current.iterationId).toBe(17);
     });
 });
