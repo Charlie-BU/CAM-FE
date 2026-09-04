@@ -40,6 +40,7 @@ import AddApiForm from "@/components/ApiManagement/ApiList/AddApiForm";
 import SmartCreateApiForm, {
     SmartCreateApiTitle,
 } from "@/components/ApiManagement/ApiList/SmartCreateApiForm";
+import ImportOpenApiForm from "@/components/ApiManagement/ApiList/ImportOpenApiForm";
 import { IconAiLine } from "@cloud-materials/common/ve-o-iconbox";
 
 import CompleteIterationForm from "@/components/ApiManagement/ApiList/CompleteIterationForm";
@@ -738,6 +739,76 @@ export const useThisService = (service_uuid: string) => {
         }
     }, [serviceDetail.id, currentVersion, fetchServiceDetail]);
 
+    const handleImportOpenApi = useCallback((onImported?: () => void) => {
+        const modal = CModal.openArcoForm({
+            title: t("iteration.importOpenApi"),
+            content: <ImportOpenApiForm />,
+            cancelText: t("common.cancel"),
+            okText: t("iteration.import"),
+            onOk: async (values, form) => {
+                try {
+                    await form.validate();
+                    const file = values.openapi_files?.[0]?.originFile as
+                        | File
+                        | undefined;
+                    if (!file) {
+                        throw new Error(t("iteration.openApiFileRequired"));
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        throw new Error(t("iteration.openApiFileTooLarge"));
+                    }
+
+                    let parsed: unknown;
+                    try {
+                        parsed = JSON.parse(await file.text());
+                    } catch {
+                        throw new Error(t("iteration.openApiDocumentInvalid"));
+                    }
+                    if (
+                        parsed === null ||
+                        Array.isArray(parsed) ||
+                        typeof parsed !== "object"
+                    ) {
+                        throw new Error(t("iteration.openApiDocumentInvalid"));
+                    }
+
+                    const res = await CAMService.ImportOpenapiPOST({
+                        service_id: serviceDetail.id,
+                        openapi_object: parsed,
+                    } as never);
+                    if (res.status !== 200) {
+                        throw new Error(
+                            res.message || t("iteration.importOpenApiFailure"),
+                        );
+                    }
+
+                    await invalidateAfterSuccessfulMutation(res);
+                    onImported?.();
+                    setInIteration(true);
+                    setIterationId(res.service_iteration_id);
+                    modal.close();
+                    Message.success(
+                        res.message || t("iteration.importOpenApiSuccess"),
+                    );
+                    if (res.warnings.length > 0) {
+                        Message.warning(
+                            t("iteration.importOpenApiWarnings", {
+                                warnings: res.warnings.join(t("common.listSeparator")),
+                            }),
+                        );
+                    }
+                } catch (err: unknown) {
+                    const msg =
+                        err instanceof Error
+                            ? err.message
+                            : t("iteration.importOpenApiFailure");
+                    Message.warning(msg);
+                    throw err;
+                }
+            },
+        });
+    }, [serviceDetail.id]);
+
     // onCompleted 由页面层传入，用于在提交成功后同步清理旧草稿的 UI 选择状态。
     const handleCompleteIteration = useCallback((onCompleted?: () => void) => {
         const modal = CModal.openArcoForm({
@@ -839,6 +910,7 @@ export const useThisService = (service_uuid: string) => {
         handleExportOpenAPI,
         setInIteration,
         handleStartIteration,
+        handleImportOpenApi,
         handleCompleteIteration,
         handleDeleteIteration,
         exitIteration,

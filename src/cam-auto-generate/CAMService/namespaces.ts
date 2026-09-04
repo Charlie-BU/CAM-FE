@@ -3,6 +3,85 @@
 /* tslint:disable */
 // @ts-nocheck
 
+export interface DeleteIterationByIdHeaderRequest {
+  /** Bearer 访问令牌 */
+  Authorization: string;
+}
+
+export interface DeleteIterationByIdBodyRequest {
+  /** 服务迭代 ID */
+  service_iteration_id: number;
+}
+
+export interface DeleteIterationById200Response {
+  /** 业务状态码 */
+  status: number;
+  /** 响应信息 */
+  message: string;
+}
+
+export interface UpdateApiByApiDraftIdHeaderRequest {
+  /** Bearer 访问令牌 */
+  Authorization: string;
+}
+
+export interface UpdateApiByApiDraftIdBodyRequest {
+  /** 服务迭代 ID */
+  service_iteration_id: number;
+  /** 草稿 API ID */
+  api_draft_id: number;
+  /** API 名称 */
+  name: string;
+  /** HTTP 方法，枚举 GET、POST、PUT、DELETE、PATCH */
+  method: string;
+  /** API 路径 */
+  path: string;
+  /** API 描述 */
+  description: string;
+  /** API 等级，枚举 P0、P1、P2、P3、P4 */
+  level: string;
+  /** 序列化后的请求参数 JSON 数组 */
+  req_params: string;
+  /** 序列化后的响应参数 JSON 数组 */
+  resp_params: string;
+}
+
+export interface UpdateApiByApiDraftId200Response {
+  /** 业务状态码 */
+  status: number;
+  /** 响应信息 */
+  message: string;
+}
+
+export interface ImportOpenapiHeaderRequest {
+  /** Bearer 访问令牌 */
+  Authorization: string;
+}
+
+export interface ImportOpenapiBodyRequest {
+  /** 目标服务 ID */
+  service_id: number;
+  /** 待导入的 OpenAPI JSON 文档 */
+  openapi_object: any;
+}
+
+export interface ImportOpenapi200Response {
+  /** 业务状态码 */
+  status: number;
+  /** 响应信息 */
+  message: string;
+  /** 新建的导入迭代 ID */
+  service_iteration_id: number;
+  /** 导入的 API 数量 */
+  api_count: number;
+  /** 导入的请求参数总数（含嵌套参数） */
+  request_param_count: number;
+  /** 导入的响应参数总数（含嵌套参数） */
+  response_param_count: number;
+  /** 未阻断导入的兼容性提示 */
+  warnings: string[];
+}
+
 export interface GetServiceByIdQueryRequest {
   /** 服务 ID */
   id: number;
@@ -23,14 +102,20 @@ export interface GetServiceById200Response {
 }
 
 export interface GetServiceById200ResponseService {
+  /** 正式 API 简表 */
+  apis: any[];
+  /** 服务迭代列表 */
+  iterations: any[];
   /** 服务说明 */
   description: string | null;
   /** 创建时间（ISO 8601） */
   created_at: string;
-  /** 更新时间（ISO 8601） */
-  updated_at: string;
   /** 是否软删除 */
   is_deleted: boolean;
+  /** 更新时间（ISO 8601） */
+  updated_at: string;
+  /** 服务所有者 ID */
+  owner_id: number;
   /** 当前版本 */
   version: string;
   /** 维护者列表 */
@@ -45,12 +130,6 @@ export interface GetServiceById200ResponseService {
   deleted_at: string | null;
   /** 所有者信息 */
   owner: GetServiceById200ResponseServiceOwner;
-  /** 服务所有者 ID */
-  owner_id: number;
-  /** 正式 API 简表 */
-  apis: any[];
-  /** 服务迭代列表 */
-  iterations: any[];
 }
 
 export interface GetServiceById200ResponseServiceMaintainersItem {
@@ -109,16 +188,14 @@ export interface GetAllApisByServiceId200Response {
 }
 
 export interface GetAllApisByServiceId200ResponseApisItem {
-  /** API ID */
-  id: number;
-  /** 所属服务 ID */
-  service_id: number;
   /** API 创建者 ID */
   owner_id: number;
   /** 所属分类 ID */
   category_id: number | null;
   /** API 名称 */
   name: string;
+  /** API ID */
+  id: number;
   /** HTTP 方法，枚举 GET、POST、PUT、DELETE、PATCH */
   method: string;
   /** API 路径 */
@@ -127,6 +204,8 @@ export interface GetAllApisByServiceId200ResponseApisItem {
   description: string | null;
   /** API 等级，枚举 P0、P1、P2、P3、P4 */
   level: string;
+  /** 所属服务 ID */
+  service_id: number;
   /** 是否启用 */
   is_enabled: boolean;
   /** 创建时间 */
@@ -196,19 +275,30 @@ export interface GenerateApiProposal200Response {
 }
 
 export interface GenerateApiProposal200ResponseProposal1 {
-  /** 请求参数草案 */
-  req_params: GenerateApiProposal200ResponseProposal1Req_paramsItem[];
   /** API 基本信息 */
   add_api: GenerateApiProposal200ResponseProposal1Add_api;
+  /** 请求参数草案 */
+  req_params: GenerateApiProposal200ResponseProposal1Req_paramsItem[];
   /** 响应参数草案 */
   resp_params: GenerateApiProposal200ResponseProposal1Resp_paramsItem[];
 }
 
-export interface GenerateApiProposal200ResponseProposal1Req_paramsItem {
-  /** 参数名称 */
+export interface GenerateApiProposal200ResponseProposal1Add_api {
+  /** API 路径 */
+  path: string;
+  /** 英文 API 名称 */
   name: string;
-  /** 参数位置，枚举 query、path、header、cookie、body */
-  location: string;
+  /** HTTP 方法 */
+  method: string;
+  /** API 描述 */
+  description: string;
+  /** API 等级 */
+  level: string;
+  /** 分类 ID */
+  category_id: number | null;
+}
+
+export interface GenerateApiProposal200ResponseProposal1Req_paramsItem {
   /** 参数类型，枚举 string、int、double、boolean、array、object、binary */
   type: string;
   /** 是否必填 */
@@ -225,24 +315,19 @@ export interface GenerateApiProposal200ResponseProposal1Req_paramsItem {
   array_child_type: string | null;
   /** 对象或对象数组的子参数 */
   children: any[] | null;
-}
-
-export interface GenerateApiProposal200ResponseProposal1Add_api {
-  /** 英文 API 名称 */
+  /** 参数名称 */
   name: string;
-  /** HTTP 方法 */
-  method: string;
-  /** API 路径 */
-  path: string;
-  /** API 描述 */
-  description: string;
-  /** API 等级 */
-  level: string;
-  /** 分类 ID */
-  category_id: number | null;
+  /** 参数位置，枚举 query、path、header、cookie、body */
+  location: string;
 }
 
 export interface GenerateApiProposal200ResponseProposal1Resp_paramsItem {
+  /** 字段类型，枚举 string、int、double、boolean、array、object、binary */
+  type: string;
+  /** 是否必填 */
+  required: boolean;
+  /** 是否允许 JSON null */
+  nullable: boolean;
   /** 字段说明 */
   description: string | null;
   /** 字段示例 */
@@ -255,12 +340,6 @@ export interface GenerateApiProposal200ResponseProposal1Resp_paramsItem {
   status_code: number;
   /** 响应字段名称 */
   name: string;
-  /** 字段类型，枚举 string、int、double、boolean、array、object、binary */
-  type: string;
-  /** 是否必填 */
-  required: boolean;
-  /** 是否允许 JSON null */
-  nullable: boolean;
 }
 
 export interface GenerateApiProposal200ResponseProposal2 {
@@ -310,6 +389,8 @@ export interface GetAllServices200ResponseServicesItem {
   is_deleted: boolean;
   /** 删除时间 */
   deleted_at?: string | null;
+  /** 所有者信息 */
+  owner: GetAllServices200ResponseServicesItemOwner;
   /** 服务 ID */
   id: number;
   /** 服务唯一标识 */
@@ -320,13 +401,9 @@ export interface GetAllServices200ResponseServicesItem {
   description?: string | null;
   /** 所有者 ID */
   owner_id: number;
-  /** 所有者信息 */
-  owner: GetAllServices200ResponseServicesItemOwner;
 }
 
 export interface GetAllServices200ResponseServicesItemOwner {
-  /** 创建时间 */
-  created_at: string;
   /** 用户 ID */
   id: number;
   /** 用户名 */
@@ -339,6 +416,8 @@ export interface GetAllServices200ResponseServicesItemOwner {
   role: string;
   /** 级别 */
   level: number;
+  /** 创建时间 */
+  created_at: string;
 }
 
 export interface GetHisNewestServicesByOwnerIdQueryRequest {
@@ -428,6 +507,12 @@ export interface GetAllDeletedServicesByUserId200Response {
 }
 
 export interface GetAllDeletedServicesByUserId200ResponseDeleted_servicesItem {
+  /** 服务版本 */
+  version: string;
+  /** 所有者 ID */
+  owner_id: number;
+  /** 创建时间 */
+  created_at: string;
   /** 服务 ID */
   id: number;
   /** 是否软删除 */
@@ -438,12 +523,6 @@ export interface GetAllDeletedServicesByUserId200ResponseDeleted_servicesItem {
   service_uuid: string;
   /** 服务说明 */
   description: string | null;
-  /** 服务版本 */
-  version: string;
-  /** 所有者 ID */
-  owner_id: number;
-  /** 创建时间 */
-  created_at: string;
 }
 
 export interface GetAllCategoriesByServiceIdQueryRequest {
@@ -521,10 +600,6 @@ export interface GetHisMaintainedServicesByUserId200ResponseServicesItem {
 }
 
 export interface GetHisMaintainedServicesByUserId200ResponseServicesItemOwner {
-  /** 级别 */
-  level: number;
-  /** 创建时间 */
-  created_at: string;
   /** 用户 ID */
   id: number;
   /** 用户名 */
@@ -535,6 +610,10 @@ export interface GetHisMaintainedServicesByUserId200ResponseServicesItemOwner {
   email: string | null;
   /** 角色 */
   role: string;
+  /** 级别 */
+  level: number;
+  /** 创建时间 */
+  created_at: string;
 }
 
 export interface GetServiceByUuidAndVersionQueryRequest {
@@ -569,6 +648,8 @@ export interface GetServiceByUuidAndVersion200ResponseService {
   is_committed?: boolean;
   /** 迭代记录（仅当前版本返回） */
   iterations?: GetServiceByUuidAndVersion200ResponseServiceIterationsItem[];
+  /** 迭代创建者（仅历史版本返回） */
+  creator?: GetServiceByUuidAndVersion200ResponseServiceCreator;
   /** 服务 ID（当前版本）或迭代 ID（历史版本） */
   id: number;
   /** 所有者 ID（仅当前版本返回） */
@@ -595,19 +676,17 @@ export interface GetServiceByUuidAndVersion200ResponseService {
   api_categories?: GetServiceByUuidAndVersion200ResponseServiceApi_categoriesItem[];
   /** 正式 API（仅当前版本返回） */
   apis?: GetServiceByUuidAndVersion200ResponseServiceApisItem[];
-  /** 迭代创建者（仅历史版本返回） */
-  creator?: GetServiceByUuidAndVersion200ResponseServiceCreator;
   /** 草稿 API 列表（仅历史版本返回） */
   api_drafts?: any[];
 }
 
 export interface GetServiceByUuidAndVersion200ResponseServiceIterationsItem {
+  /** 迭代 ID */
+  id: number;
   /** 迭代创建时间 */
   created_at: string;
   /** 是否已发布 */
   is_committed: boolean;
-  /** 迭代 ID */
-  id: number;
   /** 服务 ID */
   service_id: number;
   /** 迭代创建者 ID */
@@ -616,6 +695,23 @@ export interface GetServiceByUuidAndVersion200ResponseServiceIterationsItem {
   version?: string | null;
   /** 历史说明 */
   description?: string | null;
+}
+
+export interface GetServiceByUuidAndVersion200ResponseServiceCreator {
+  /** 用户名 */
+  username: string;
+  /** 昵称 */
+  nickname?: string | null;
+  /** 创建者 ID */
+  id: number;
+  /** 邮箱 */
+  email?: string | null;
+  /** 角色 */
+  role: string;
+  /** 级别 */
+  level: number;
+  /** 创建时间 */
+  created_at: string;
 }
 
 export interface GetServiceByUuidAndVersion200ResponseServiceOwner {
@@ -664,6 +760,12 @@ export interface GetServiceByUuidAndVersion200ResponseServiceApi_categoriesItem 
 }
 
 export interface GetServiceByUuidAndVersion200ResponseServiceApisItem {
+  /** 接口等级 */
+  level: string;
+  /** 请求路径 */
+  path: string;
+  /** API 描述 */
+  description?: string | null;
   /** 是否启用 */
   is_enabled: boolean;
   /** 创建时间 */
@@ -682,29 +784,6 @@ export interface GetServiceByUuidAndVersion200ResponseServiceApisItem {
   name: string;
   /** 请求方法 */
   method: string;
-  /** 请求路径 */
-  path: string;
-  /** API 描述 */
-  description?: string | null;
-  /** 接口等级 */
-  level: string;
-}
-
-export interface GetServiceByUuidAndVersion200ResponseServiceCreator {
-  /** 创建者 ID */
-  id: number;
-  /** 用户名 */
-  username: string;
-  /** 昵称 */
-  nickname?: string | null;
-  /** 邮箱 */
-  email?: string | null;
-  /** 角色 */
-  role: string;
-  /** 级别 */
-  level: number;
-  /** 创建时间 */
-  created_at: string;
 }
 
 export interface IsServiceMaintainerQueryRequest {
@@ -748,6 +827,14 @@ export interface GetIterationById200Response {
 }
 
 export interface GetIterationById200ResponseIteration {
+  /** 创建者 */
+  creator: GetIterationById200ResponseIterationCreator;
+  /** 草稿 API 列表 */
+  api_drafts: any[];
+  /** 迭代 ID */
+  id: number;
+  /** 所属服务 ID */
+  service_id: number;
   /** 迭代创建者 ID */
   creator_id: number | null;
   /** 提交后的版本号，未提交时为 null */
@@ -760,14 +847,23 @@ export interface GetIterationById200ResponseIteration {
   is_committed: boolean;
   /** 关联服务 */
   service: GetIterationById200ResponseIterationService;
-  /** 创建者 */
-  creator: GetIterationById200ResponseIterationCreator;
-  /** 草稿 API 列表 */
-  api_drafts: any[];
-  /** 迭代 ID */
+}
+
+export interface GetIterationById200ResponseIterationCreator {
+  /** 用户名 */
+  username: string;
+  /** 等级 */
+  level: number;
+  /** 邮箱 */
+  email: string | null;
+  /** 创建时间 */
+  created_at: string;
+  /** 角色 */
+  role: string;
+  /** 昵称 */
+  nickname: string | null;
+  /** 用户 ID */
   id: number;
-  /** 所属服务 ID */
-  service_id: number;
 }
 
 export interface GetIterationById200ResponseIterationService {
@@ -789,23 +885,6 @@ export interface GetIterationById200ResponseIterationService {
   is_deleted: boolean;
   /** 删除时间 */
   deleted_at: string | null;
-}
-
-export interface GetIterationById200ResponseIterationCreator {
-  /** 昵称 */
-  nickname: string | null;
-  /** 用户 ID */
-  id: number;
-  /** 用户名 */
-  username: string;
-  /** 邮箱 */
-  email: string | null;
-  /** 等级 */
-  level: number;
-  /** 创建时间 */
-  created_at: string;
-  /** 角色 */
-  role: string;
 }
 
 export interface ExportOpenapiByUuidAndVersionQueryRequest {
@@ -843,14 +922,14 @@ export interface ExportOpenapiByUuidAndVersion200ResponseOpenapi_object {
 }
 
 export interface ExportOpenapiByUuidAndVersion200ResponseOpenapi_objectInfo {
-  /** 联系人信息 */
-  contact: any | null;
   /** 服务名称 */
   title: string;
   /** 服务说明 */
   description: string | null;
   /** 文档版本 */
   version: string;
+  /** 联系人信息 */
+  contact: any | null;
 }
 
 export interface GetAllVersionsByUuidQueryRequest {
@@ -1250,16 +1329,6 @@ export interface CreateNewService200Response {
 }
 
 export interface CreateNewService200ResponseService {
-  /** 删除时间 */
-  deleted_at: string | null;
-  /** 所有者 */
-  owner: CreateNewService200ResponseServiceOwner;
-  /** 维护者列表 */
-  maintainers: CreateNewService200ResponseServiceMaintainersItem[];
-  /** 分类列表 */
-  api_categories: CreateNewService200ResponseServiceApi_categoriesItem[];
-  /** API 列表 */
-  apis: CreateNewService200ResponseServiceApisItem[];
   /** 服务 ID */
   id: number;
   /** 服务所有者 ID */
@@ -1270,14 +1339,41 @@ export interface CreateNewService200ResponseService {
   version: string;
   /** 服务说明 */
   description: string | null;
+  /** 迭代列表 */
+  iterations: CreateNewService200ResponseServiceIterationsItem[];
+  /** 所有者 */
+  owner: CreateNewService200ResponseServiceOwner;
   /** 创建时间 */
   created_at: string;
   /** 更新时间 */
   updated_at: string;
   /** 是否软删除 */
   is_deleted: boolean;
-  /** 迭代列表 */
-  iterations: CreateNewService200ResponseServiceIterationsItem[];
+  /** 删除时间 */
+  deleted_at: string | null;
+  /** 维护者列表 */
+  maintainers: CreateNewService200ResponseServiceMaintainersItem[];
+  /** 分类列表 */
+  api_categories: CreateNewService200ResponseServiceApi_categoriesItem[];
+  /** API 列表 */
+  apis: CreateNewService200ResponseServiceApisItem[];
+}
+
+export interface CreateNewService200ResponseServiceIterationsItem {
+  /** 迭代 ID */
+  id: number;
+  /** 服务 ID */
+  service_id: number;
+  /** 创建者 ID */
+  creator_id: number | null;
+  /** 版本号 */
+  version: string | null;
+  /** 描述 */
+  description: string | null;
+  /** 创建时间 */
+  created_at: string;
+  /** 是否提交 */
+  is_committed: boolean;
 }
 
 export interface CreateNewService200ResponseServiceOwner {
@@ -1326,12 +1422,6 @@ export interface CreateNewService200ResponseServiceApi_categoriesItem {
 }
 
 export interface CreateNewService200ResponseServiceApisItem {
-  /** API ID */
-  id: number;
-  /** 服务 ID */
-  service_id: number;
-  /** 所有者 ID */
-  owner_id: number;
   /** 分类 ID */
   category_id: number | null;
   /** API 名称 */
@@ -1350,23 +1440,12 @@ export interface CreateNewService200ResponseServiceApisItem {
   created_at: string;
   /** 更新时间 */
   updated_at: string;
-}
-
-export interface CreateNewService200ResponseServiceIterationsItem {
-  /** 迭代 ID */
+  /** API ID */
   id: number;
   /** 服务 ID */
   service_id: number;
-  /** 创建者 ID */
-  creator_id: number | null;
-  /** 版本号 */
-  version: string | null;
-  /** 描述 */
-  description: string | null;
-  /** 创建时间 */
-  created_at: string;
-  /** 是否提交 */
-  is_committed: boolean;
+  /** 所有者 ID */
+  owner_id: number;
 }
 
 export interface DeleteServiceByIdHeaderRequest {
@@ -1606,8 +1685,6 @@ export interface AddApi200Response {
 export interface AddApi200ResponseApi {
   /** 草稿 API ID */
   id: number;
-  /** 服务迭代 ID */
-  service_iteration_id: number;
   /** 草稿创建者 ID */
   owner_id: number;
   /** 分类 ID */
@@ -1624,58 +1701,10 @@ export interface AddApi200ResponseApi {
   description?: string | null;
   /** 是否启用 */
   is_enabled: boolean;
+  /** 服务迭代 ID */
+  service_iteration_id: number;
   /** 创建时间 */
   created_at: string;
   /** 更新时间 */
   updated_at: string;
-}
-
-export interface DeleteIterationByIdHeaderRequest {
-  /** Bearer 访问令牌 */
-  Authorization: string;
-}
-
-export interface DeleteIterationByIdBodyRequest {
-  /** 服务迭代 ID */
-  service_iteration_id: number;
-}
-
-export interface DeleteIterationById200Response {
-  /** 业务状态码 */
-  status: number;
-  /** 响应信息 */
-  message: string;
-}
-
-export interface UpdateApiByApiDraftIdHeaderRequest {
-  /** Bearer 访问令牌 */
-  Authorization: string;
-}
-
-export interface UpdateApiByApiDraftIdBodyRequest {
-  /** 服务迭代 ID */
-  service_iteration_id: number;
-  /** 草稿 API ID */
-  api_draft_id: number;
-  /** API 名称 */
-  name: string;
-  /** HTTP 方法，枚举 GET、POST、PUT、DELETE、PATCH */
-  method: string;
-  /** API 路径 */
-  path: string;
-  /** API 描述 */
-  description: string;
-  /** API 等级，枚举 P0、P1、P2、P3、P4 */
-  level: string;
-  /** 序列化后的请求参数 JSON 数组 */
-  req_params: string;
-  /** 序列化后的响应参数 JSON 数组 */
-  resp_params: string;
-}
-
-export interface UpdateApiByApiDraftId200Response {
-  /** 业务状态码 */
-  status: number;
-  /** 响应信息 */
-  message: string;
 }

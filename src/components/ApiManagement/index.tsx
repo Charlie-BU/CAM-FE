@@ -35,6 +35,7 @@ const ApiManagement: React.FC = () => {
         handleAddOrRemoveServiceMaintainerById,
         handleExportOpenAPI,
         handleStartIteration,
+        handleImportOpenApi,
         handleCompleteIteration,
         handleDeleteIteration,
         exitIteration,
@@ -172,6 +173,8 @@ const ApiManagement: React.FC = () => {
                             clearIterationSelection();
                             await handleStartIteration();
                         },
+                        handleImportOpenApi: () =>
+                            handleImportOpenApi(clearIterationSelection),
                         // 提交成功时先清理草稿选择，再由 Hook 刷新正式版本数据。
                         handleCompleteIteration: () =>
                             handleCompleteIteration(clearIterationSelection),

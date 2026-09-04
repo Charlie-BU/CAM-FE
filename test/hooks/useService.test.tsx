@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const { CAMService, invalidateAfterSuccessfulMutation, navigate, readOptions } = vi.hoisted(() => ({
+const { CAMService, invalidateAfterSuccessfulMutation, navigate, openArcoForm, readOptions } = vi.hoisted(() => ({
     CAMService: {
         GetHisNewestServicesByOwnerIdGET: vi.fn(),
         DeleteServiceByIdPOST: vi.fn(),
@@ -17,10 +17,12 @@ const { CAMService, invalidateAfterSuccessfulMutation, navigate, readOptions } =
         GetAllVersionsByUuidGET: vi.fn(),
         GetServiceByUuidAndVersionGET: vi.fn(),
         StartIterationPOST: vi.fn(),
+        ImportOpenapiPOST: vi.fn(),
         DeleteIterationByIdPOST: vi.fn(),
     },
     invalidateAfterSuccessfulMutation: vi.fn(),
     navigate: vi.fn(),
+    openArcoForm: vi.fn(),
     readOptions: vi.fn((options) => ({ needCache: true, ...options })),
 }));
 
@@ -34,7 +36,7 @@ vi.mock("@/i18n", () => ({
     default: { t: (key: string) => key },
 }));
 vi.mock("@cloud-materials/common", () => ({
-    CModal: { openArcoForm: vi.fn() },
+    CModal: { openArcoForm },
     Message: { success: vi.fn(), warning: vi.fn() },
     Typography: { Text: () => null, Ellipsis: () => null },
     Space: () => null,
@@ -48,6 +50,7 @@ vi.mock("@/components/ApiManagement/ApiList/SmartCreateApiForm", () => ({
     default: () => null,
     SmartCreateApiTitle: () => null,
 }));
+vi.mock("@/components/ApiManagement/ApiList/ImportOpenApiForm", () => ({ default: () => null }));
 vi.mock("@/components/ApiManagement/ApiList/CompleteIterationForm", () => ({ default: () => null }));
 vi.mock("@/utils", () => ({ genApiMethodTag: vi.fn() }));
 
@@ -218,5 +221,85 @@ describe("useThisService iteration deletion", () => {
         expect(onCompleted).not.toHaveBeenCalled();
         expect(result.current.inIteration).toBe(true);
         expect(result.current.iterationId).toBe(17);
+    });
+
+    it("imports an OpenAPI document and enters the new iteration", async () => {
+        mockServiceReads();
+        vi.mocked(CAMService.ImportOpenapiPOST).mockResolvedValue({
+            status: 200,
+            message: "imported",
+            service_iteration_id: 23,
+            api_count: 1,
+            request_param_count: 1,
+            response_param_count: 1,
+            warnings: [],
+        });
+        const close = vi.fn();
+        openArcoForm.mockReturnValue({ close });
+        const onImported = vi.fn();
+        const { result } = renderHook(() => useThisService("service-001"));
+
+        await waitFor(() => expect(result.current.serviceDetail.id).toBe(1));
+        act(() => result.current.handleImportOpenApi(onImported));
+        const modalProps = openArcoForm.mock.calls[0][0];
+        expect(modalProps.title).toBe("iteration.importOpenApi");
+        expect(modalProps.okButtonProps).toBeUndefined();
+        const openapiObject = {
+            openapi: "3.1.0",
+            info: { title: "service-001", version: "2.0.0" },
+            paths: {},
+        };
+        const file = {
+            size: 128,
+            text: vi.fn().mockResolvedValue(JSON.stringify(openapiObject)),
+        };
+        await act(async () => {
+            await modalProps.onOk(
+                {
+                    openapi_files: [{ originFile: file }],
+                },
+                { validate: vi.fn() },
+            );
+        });
+
+        expect(CAMService.ImportOpenapiPOST).toHaveBeenCalledWith({
+            service_id: 1,
+            openapi_object: {
+                openapi: "3.1.0",
+                info: { title: "service-001", version: "2.0.0" },
+                paths: {},
+            },
+        });
+        expect(file.text).toHaveBeenCalledOnce();
+        expect(onImported).toHaveBeenCalledOnce();
+        expect(result.current.inIteration).toBe(true);
+        expect(result.current.iterationId).toBe(23);
+        expect(close).toHaveBeenCalledOnce();
+    });
+
+    it("keeps the import modal open when the JSON document is invalid", async () => {
+        mockServiceReads();
+        const close = vi.fn();
+        openArcoForm.mockReturnValue({ close });
+        const { result } = renderHook(() => useThisService("service-001"));
+
+        await waitFor(() => expect(result.current.serviceDetail.id).toBe(1));
+        act(() => result.current.handleImportOpenApi());
+        const modalProps = openArcoForm.mock.calls[0][0];
+        const file = {
+            size: 8,
+            text: vi.fn().mockResolvedValue("not-json"),
+        };
+        await act(async () => {
+            await expect(
+                modalProps.onOk(
+                    { openapi_files: [{ originFile: file }] },
+                    { validate: vi.fn() },
+                ),
+            ).rejects.toThrow("iteration.openApiDocumentInvalid");
+        });
+
+        expect(CAMService.ImportOpenapiPOST).not.toHaveBeenCalled();
+        expect(close).not.toHaveBeenCalled();
     });
 });

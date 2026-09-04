@@ -4,6 +4,15 @@
 // @ts-nocheck
 
 import type {
+  DeleteIterationByIdBodyRequest,
+  DeleteIterationByIdHeaderRequest,
+  DeleteIterationById200Response,
+  UpdateApiByApiDraftIdBodyRequest,
+  UpdateApiByApiDraftIdHeaderRequest,
+  UpdateApiByApiDraftId200Response,
+  ImportOpenapiBodyRequest,
+  ImportOpenapiHeaderRequest,
+  ImportOpenapi200Response,
   GetServiceByIdQueryRequest,
   GetServiceByIdHeaderRequest,
   GetServiceById200Response,
@@ -94,12 +103,6 @@ import type {
   AddApiBodyRequest,
   AddApiHeaderRequest,
   AddApi200Response,
-  DeleteIterationByIdBodyRequest,
-  DeleteIterationByIdHeaderRequest,
-  DeleteIterationById200Response,
-  UpdateApiByApiDraftIdBodyRequest,
-  UpdateApiByApiDraftIdHeaderRequest,
-  UpdateApiByApiDraftId200Response,
 } from './namespaces';
 
 export default class CAMServiceService<T> {
@@ -135,6 +138,61 @@ export default class CAMServiceService<T> {
   }
 
   /* API Services */
+
+  /** 删除指定历史或草稿迭代，以及该迭代下的草稿 API 和参数 */
+  DeleteIterationByIdPOST(
+    req: DeleteIterationByIdBodyRequest & DeleteIterationByIdHeaderRequest,
+    options?: T,
+  ): Promise<DeleteIterationById200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/service/deleteIterationById');
+    const method = 'POST';
+    const data = { service_iteration_id: _req['service_iteration_id'] };
+    const params = undefined;
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 覆盖更新未提交 API 草稿的基本信息，并先删除后重建其请求和响应参数树。 */
+  UpdateApiByApiDraftIdPOST(
+    req: UpdateApiByApiDraftIdBodyRequest & UpdateApiByApiDraftIdHeaderRequest,
+    options?: T,
+  ): Promise<UpdateApiByApiDraftId200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/api/updateApiByApiDraftId');
+    const method = 'POST';
+    const data = {
+      service_iteration_id: _req['service_iteration_id'],
+      api_draft_id: _req['api_draft_id'],
+      name: _req['name'],
+      method: _req['method'],
+      path: _req['path'],
+      description: _req['description'],
+      level: _req['level'],
+      req_params: _req['req_params'],
+      resp_params: _req['resp_params'],
+    };
+    const params = undefined;
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
+
+  /** 为现有服务创建空的未提交迭代，并将 OpenAPI 3.0.x 或 3.1.x JSON 文档导入为 API 与参数草稿。当前用户已有未提交迭代时拒绝导入；导入过程为单事务，失败时不保留部分数据。 */
+  ImportOpenapiPOST(
+    req: ImportOpenapiBodyRequest & ImportOpenapiHeaderRequest,
+    options?: T,
+  ): Promise<ImportOpenapi200Response> {
+    const _req = req || {};
+    let url = this.genBaseURL('/v1/service/importOpenapi');
+    const method = 'POST';
+    const data = {
+      service_id: _req['service_id'],
+      openapi_object: _req['openapi_object'],
+    };
+    const params = undefined;
+    const headers = { Authorization: _req['Authorization'] };
+    return this.request({ url, method, data, params, headers }, options);
+  }
 
   /** 根据服务 ID 查询服务完整详情。 */
   GetServiceByIdGET(
@@ -626,44 +684,6 @@ export default class CAMServiceService<T> {
       description: _req['description'],
       level: _req['level'],
       category_id: _req['category_id'],
-    };
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 删除指定历史或草稿迭代，以及该迭代下的草稿 API 和参数 */
-  DeleteIterationByIdPOST(
-    req: DeleteIterationByIdBodyRequest & DeleteIterationByIdHeaderRequest,
-    options?: T,
-  ): Promise<DeleteIterationById200Response> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/service/deleteIterationById');
-    const method = 'POST';
-    const data = { service_iteration_id: _req['service_iteration_id'] };
-    const params = undefined;
-    const headers = { Authorization: _req['Authorization'] };
-    return this.request({ url, method, data, params, headers }, options);
-  }
-
-  /** 覆盖更新未提交 API 草稿的基本信息，并先删除后重建其请求和响应参数树。 */
-  UpdateApiByApiDraftIdPOST(
-    req: UpdateApiByApiDraftIdBodyRequest & UpdateApiByApiDraftIdHeaderRequest,
-    options?: T,
-  ): Promise<UpdateApiByApiDraftId200Response> {
-    const _req = req || {};
-    let url = this.genBaseURL('/v1/api/updateApiByApiDraftId');
-    const method = 'POST';
-    const data = {
-      service_iteration_id: _req['service_iteration_id'],
-      api_draft_id: _req['api_draft_id'],
-      name: _req['name'],
-      method: _req['method'],
-      path: _req['path'],
-      description: _req['description'],
-      level: _req['level'],
-      req_params: _req['req_params'],
-      resp_params: _req['resp_params'],
     };
     const params = undefined;
     const headers = { Authorization: _req['Authorization'] };

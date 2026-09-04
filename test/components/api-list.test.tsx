@@ -84,6 +84,7 @@ const renderIterationActions = (
 ) => {
     const handlers = {
         handleStartIteration: vi.fn(),
+        handleImportOpenApi: vi.fn(),
         handleCompleteIteration: vi.fn(),
         handleDeleteIteration: vi.fn(),
     };
@@ -124,14 +125,15 @@ describe("IterationActions", () => {
         expect(handleStartIteration).toHaveBeenCalledOnce();
     });
 
-    it("keeps the OpenAPI import option without starting an iteration", async () => {
-        const { handleStartIteration } = renderIterationActions();
+    it("opens the OpenAPI import flow without starting a copied iteration", async () => {
+        const { handleImportOpenApi, handleStartIteration } = renderIterationActions();
 
         await userEvent.click(
             screen.getByRole("button", { name: "iteration.importOpenApi" }),
         );
 
         expect(handleStartIteration).not.toHaveBeenCalled();
+        expect(handleImportOpenApi).toHaveBeenCalledOnce();
     });
 
     it("shows the complete-iteration action during an iteration", async () => {

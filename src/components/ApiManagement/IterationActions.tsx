@@ -7,6 +7,7 @@ interface IterationActionsProps {
     inIteration: boolean;
     isLatest: boolean;
     handleStartIteration: () => void;
+    handleImportOpenApi: () => void;
     handleCompleteIteration: () => void;
     handleDeleteIteration: () => void;
 }
@@ -16,6 +17,7 @@ const IterationActions: React.FC<IterationActionsProps> = ({
     inIteration,
     isLatest,
     handleStartIteration,
+    handleImportOpenApi,
     handleCompleteIteration,
     handleDeleteIteration,
 }) => {
@@ -66,7 +68,7 @@ const IterationActions: React.FC<IterationActionsProps> = ({
             >
                 {t("iteration.startFromCurrentVersion")}
             </Menu.Item>
-            <Menu.Item key="from-openapi">
+            <Menu.Item key="from-openapi" onClick={handleImportOpenApi}>
                 {t("iteration.importOpenApi")}
             </Menu.Item>
         </Menu>
@@ -78,7 +80,7 @@ const IterationActions: React.FC<IterationActionsProps> = ({
             position="bl"
             trigger="click"
         >
-            <Button type="outline">{t("iteration.start")}</Button>
+            <Button type="primary">{t("iteration.start")}</Button>
         </Dropdown>
     );
 };

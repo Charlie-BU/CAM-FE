@@ -69,6 +69,43 @@
     text-shadow: 0 0 10px rgba(75, 93, 255, 0.12);
 }
 
+.openapiUpload {
+    width: 100%;
+
+    :global(.arco-upload-trigger-custom-active) .openapiUploadTrigger {
+        background-color: #f1f5f9;
+    }
+}
+
+.openapiUploadTrigger {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 28px 20px;
+    border: 1px dashed #c2cbd6;
+    border-radius: 4px;
+    background-color: #f7fafb;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 150ms ease-in-out;
+
+    &:hover,
+    &:active {
+        background-color: #f1f5f9;
+    }
+}
+
+.openapiUploadTitle {
+    color: var(--color-text-1, #1d2129);
+    font-weight: 500;
+}
+
+.openapiUploadHint {
+    margin-top: 6px;
+    color: var(--color-text-3, #86909c);
+    font-size: 12px;
+    line-height: 20px;
+}
+
 .tree {
     :global(.arco-tree-node) {
         padding: 6px 4px;

@@ -39,6 +39,7 @@ interface HeaderHandlers {
     ) => Promise<boolean>;
     handleExportOpenAPI: () => Promise<Record<string, any> | null>;
     handleStartIteration: () => void;
+    handleImportOpenApi: () => void;
     handleCompleteIteration: () => void;
     handleDeleteIteration: () => void;
 }
@@ -74,6 +75,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             handleAddOrRemoveServiceMaintainerById,
             handleExportOpenAPI,
             handleStartIteration,
+            handleImportOpenApi,
             handleCompleteIteration,
             handleDeleteIteration,
         },
@@ -511,6 +513,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                         inIteration={inIteration}
                         isLatest={isLatest}
                         handleStartIteration={handleStartIteration}
+                        handleImportOpenApi={handleImportOpenApi}
                         handleCompleteIteration={handleCompleteIteration}
                         handleDeleteIteration={handleDeleteIteration}
                     />

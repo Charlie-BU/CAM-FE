@@ -4,7 +4,7 @@ import styles from "../index.module.less";
 
 export const SmartCreateApiTitle: React.FC = () => {
     const { t } = useTranslation();
-    return <span className={styles.aiMenuContent}><span className={styles.aiMenuGradientText}>{t("api.smartCreate")}</span></span>;
+    return <span className={styles.aiMenuContent}><span className={styles.aiMenuGradientText}>{t("api.smartCreateAPI")}</span></span>;
 };
 
 const SmartCreateApiForm: React.FC = () => {
