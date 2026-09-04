@@ -528,6 +528,8 @@ export const useThisService = (service_uuid: string) => {
         apis.sort((a, b) => a.method.localeCompare(b.method)).forEach((api) => {
             const node = {
                 key: api.id.toString(),
+                apiName: api.name,
+                apiPath: api.path,
                 title: (
                     <Space style={{ fontWeight: 500 }}>
                         {genApiMethodTag(api.method as "GET" | "POST" | "PUT" | "DELETE" | "PATCH", "small")}

@@ -61,6 +61,25 @@ const ApiList: React.FC<ApiListProps> = (props) => {
 
     // 用于控制树节点选中状态
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+    const [searchKeyword, setSearchKeyword] = useState("");
+
+    const filteredTreeData = useMemo(() => {
+        const keyword = searchKeyword.trim().toLowerCase();
+        if (!keyword) {
+            return treeData;
+        }
+
+        return treeData
+            .map((category) => ({
+                ...category,
+                children: category.children?.filter((api: any) =>
+                    [api.apiName, api.apiPath].some((value) =>
+                        String(value ?? "").toLowerCase().includes(keyword)
+                    )
+                ),
+            }))
+            .filter((category) => category.children?.length > 0);
+    }, [searchKeyword, treeData]);
 
     useEffect(() => {
         if (!firstOptionKey) {
@@ -164,7 +183,12 @@ const ApiList: React.FC<ApiListProps> = (props) => {
     return (
         <div style={{ padding: 12 }}>
             <div className={styles.search}>
-                <Search allowClear placeholder={t("api.searchPlaceholder")} />
+                <Search
+                    allowClear
+                    placeholder={t("api.searchPlaceholder")}
+                    value={searchKeyword}
+                    onChange={setSearchKeyword}
+                />
                 {inIteration ? (
                     <Dropdown
                         droplist={createApiOperations}
@@ -181,12 +205,20 @@ const ApiList: React.FC<ApiListProps> = (props) => {
             </div>
 
             {/* autoExpandParent只有在Tree初次挂载时生效，所以要在treeData计算完成后再渲染 */}
-            {treeData.length > 0 && (
+            {filteredTreeData.length > 0 && (
                 <Tree
+                    key={searchKeyword}
                     className={styles.tree}
                     selectedKeys={selectedKeys}
-                    treeData={treeData}
+                    treeData={filteredTreeData}
                     autoExpandParent
+                    defaultExpandedKeys={
+                        searchKeyword.trim()
+                            ? filteredTreeData.map((category) =>
+                                  String(category.key)
+                              )
+                            : undefined
+                    }
                     blockNode
                     draggable={!inIteration && isLatest}
                     onSelect={handleSelectApi}

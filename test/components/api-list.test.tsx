@@ -64,10 +64,34 @@ vi.mock("@cloud-materials/common", () => {
         Dropdown,
         IconDelete: () => null,
         IconPlus: () => null,
-        Input: { Search: () => null },
+        Input: {
+            Search: ({
+                onChange,
+                placeholder,
+                value,
+            }: {
+                onChange?: (value: string) => void;
+                placeholder?: string;
+                value?: string;
+            }) => (
+                <input
+                    aria-label={placeholder}
+                    value={value}
+                    onChange={(event) => onChange?.(event.target.value)}
+                />
+            ),
+        },
         Menu,
         Space: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-        Tree: () => null,
+        Tree: ({ treeData }: { treeData?: any[] }) => (
+            <div>
+                {treeData?.flatMap((category) =>
+                    category.children?.map((api: any) => (
+                        <span key={api.key}>{api.title}</span>
+                    )),
+                )}
+            </div>
+        ),
     };
 });
 
@@ -167,6 +191,64 @@ describe("IterationActions", () => {
 });
 
 describe("ApiList", () => {
+    it("filters APIs by name or path without matching category names", async () => {
+        render(
+            <ApiList
+                inIteration={false}
+                isLatest
+                treeData={[
+                    {
+                        key: "category-users",
+                        title: "Accounts",
+                        children: [
+                            {
+                                key: "1",
+                                apiName: "GetUser",
+                                apiPath: "/users/{id}",
+                                title: "GetUser /users/{id}",
+                            },
+                        ],
+                    },
+                    {
+                        key: "category-orders",
+                        title: "GetUser category",
+                        children: [
+                            {
+                                key: "2",
+                                apiName: "CreateOrder",
+                                apiPath: "/orders",
+                                title: "CreateOrder /orders",
+                            },
+                        ],
+                    },
+                ]}
+                selectedApiId={-1}
+                setSelectedApiId={vi.fn()}
+                handlers={{
+                    handleAddApi: vi.fn(),
+                    handleSmartCreateApi: vi.fn(),
+                    handleAddCategory: vi.fn(),
+                    handleUpdateApiCategory: vi.fn(),
+                    handleDeleteCategory: vi.fn(),
+                }}
+            />,
+        );
+
+        const search = screen.getByRole("textbox", {
+            name: "api.searchPlaceholder",
+        });
+        await userEvent.type(search, "getuser");
+
+        expect(screen.getByText("GetUser /users/{id}")).toBeInTheDocument();
+        expect(screen.queryByText("CreateOrder /orders")).not.toBeInTheDocument();
+
+        await userEvent.clear(search);
+        await userEvent.type(search, "/ORDERS");
+
+        expect(screen.queryByText("GetUser /users/{id}")).not.toBeInTheDocument();
+        expect(screen.getByText("CreateOrder /orders")).toBeInTheDocument();
+    });
+
     it("shows the add-category action outside an iteration", async () => {
         const handleAddCategory = vi.fn();
         render(
