@@ -4,7 +4,8 @@
 
     :global(.arco-layout-sider-light) {
         box-shadow: none;
-        border-right: 1px solid var(--color-neutral-3, #e5e6eb);
+        border-right: 1px solid var(--color-neutral-3);
+        background: var(--color-bg-3);
     }
 }
 
@@ -73,7 +74,7 @@
     width: 100%;
 
     :global(.arco-upload-trigger-custom-active) .openapiUploadTrigger {
-        background-color: #f1f5f9;
+        background-color: var(--color-bg-4);
     }
 }
 
@@ -81,27 +82,27 @@
     box-sizing: border-box;
     width: 100%;
     padding: 28px 20px;
-    border: 1px dashed #c2cbd6;
+    border: 1px dashed var(--color-border-3);
     border-radius: 4px;
-    background-color: #f7fafb;
+    background-color: var(--color-bg-1);
     text-align: center;
     cursor: pointer;
     transition: background-color 150ms ease-in-out;
 
     &:hover,
     &:active {
-        background-color: #f1f5f9;
+        background-color: var(--color-bg-4);
     }
 }
 
 .openapiUploadTitle {
-    color: var(--color-text-1, #1d2129);
+    color: var(--color-text-1);
     font-weight: 500;
 }
 
 .openapiUploadHint {
     margin-top: 6px;
-    color: var(--color-text-3, #86909c);
+    color: var(--color-text-3);
     font-size: 12px;
     line-height: 20px;
 }
