@@ -396,6 +396,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                     style={{
                         color: "#000",
                         fontWeight: 600,
+                        whiteSpace: "nowrap",
                     }}
                 >
                     {versions &&
@@ -439,7 +440,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                                         "service.userSearchPlaceholder",
                                     )}
                                     style={{
-                                        width: 200,
+                                        width: 120,
                                     }}
                                     triggerProps={{
                                         autoAlignPopupWidth: false,
