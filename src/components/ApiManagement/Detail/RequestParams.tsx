@@ -81,7 +81,7 @@ const RequestParams = (props: { apiDetail: GetApiById200ResponseApi }) => {
         { title: t("common.description"), dataIndex: "description", width: 240, placeholder: "-" },
         { title: t("api.defaultValue"), dataIndex: "default_value", width: 200, placeholder: "-" },
         { title: t("api.exampleValue"), dataIndex: "example", width: 200, placeholder: "-" },
-    ];
+    ].map((column) => ({ ...column, ellipsis: true }));
     const requestParamsByLocation = apiDetail.request_params_by_location;
     const existLocations = (Object.keys(requestParamsByLocation) as Array<keyof typeof requestParamsByLocation>).filter(
         (location) => requestParamsByLocation[location]?.length > 0

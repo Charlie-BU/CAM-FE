@@ -81,7 +81,7 @@ const ResponseParams = (props: { apiDetail: GetApiById200ResponseApi }) => {
         },
         { title: t("common.description"), dataIndex: "description", width: 240, placeholder: "-" },
         { title: t("api.exampleValue"), dataIndex: "example", placeholder: "-" },
-    ];
+    ].map((column) => ({ ...column, ellipsis: true }));
     // 后端按状态码动态返回字段；CAM 当前仅生成了 200 属性，保留运行时完整映射。
     const responseParamsByStatusCode = apiDetail.response_params_by_status_code as unknown as Record<
         number,
