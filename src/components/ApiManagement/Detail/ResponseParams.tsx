@@ -1,4 +1,5 @@
 import {
+    CEllipsis,
     IconCommon,
     Popover,
     Space,
@@ -29,29 +30,23 @@ const ResponseParams = (props: { apiDetail: GetApiById200ResponseApi }) => {
             render: (v: string, record: GetApiById200ResponseApiResponse_params_by_status_code200Item) => {
                 const childrenParams = record.children_params || [];
                 if (!childrenParams.length) return v;
-                const popoverText =
-                    record.type === "array" && record.array_child_type === "object"
-                        ? t("api.viewArrayChildParameters")
-                        : t("api.viewChildParameters");
                 return (
-                    <Popover content={popoverText}>
-                        <Popover
-                            trigger="click"
-                            content={
-                                <Table<GetApiById200ResponseApiResponse_params_by_status_code200Item>
-                                    pagination={false}
-                                    columns={responseColumns}
-                                    rowKey="name"
-                                    data={childrenParams}
-                                    size="small"
-                                />
-                            }
-                            style={{ width: 1000, maxWidth: 1000 }}
-                        >
-                            <Text type="primary" className={styles.hasChildParamTitle}>
-                                {v}
-                            </Text>
-                        </Popover>
+                    <Popover
+                        trigger="click"
+                        content={
+                            <Table<GetApiById200ResponseApiResponse_params_by_status_code200Item>
+                                pagination={false}
+                                columns={responseColumns}
+                                rowKey="name"
+                                data={childrenParams}
+                                size="small"
+                            />
+                        }
+                        style={{ width: 1000, maxWidth: 1000 }}
+                    >
+                        <Text type="primary" className={styles.hasChildParamTitle}>
+                            {v}
+                        </Text>
                     </Popover>
                 );
             },
@@ -81,7 +76,17 @@ const ResponseParams = (props: { apiDetail: GetApiById200ResponseApi }) => {
         },
         { title: t("common.description"), dataIndex: "description", width: 240, placeholder: "-" },
         { title: t("api.exampleValue"), dataIndex: "example", placeholder: "-" },
-    ].map((column) => ({ ...column, ellipsis: true }));
+    ].map((column: any) => ({
+        ...column,
+        ellipsis: true,
+        render: (value: string, record: any) => (
+            <CEllipsis
+                showPopover="auto"
+                popoverContent={column.dataIndex === "name" ? value : undefined}
+                content={column.render ? column.render(value, record) : value}
+            />
+        ),
+    }));
     // 后端按状态码动态返回字段；CAM 当前仅生成了 200 属性，保留运行时完整映射。
     const responseParamsByStatusCode = apiDetail.response_params_by_status_code as unknown as Record<
         number,

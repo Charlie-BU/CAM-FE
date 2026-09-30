@@ -1,4 +1,5 @@
 import {
+    CEllipsis,
     IconCommon,
     Popover,
     Space,
@@ -28,29 +29,23 @@ const RequestParams = (props: { apiDetail: GetApiById200ResponseApi }) => {
             render: (v: string, record: GetApiById200ResponseApiRequest_params_by_locationQueryItem) => {
                 const childrenParams = record.children_params || [];
                 if (!childrenParams.length) return v;
-                const popoverText =
-                    record.type === "array" && record.array_child_type === "object"
-                        ? t("api.viewArrayChildParameters")
-                        : t("api.viewChildParameters");
                 return (
-                    <Popover content={popoverText}>
-                        <Popover
-                            trigger="click"
-                            content={
-                                <Table<GetApiById200ResponseApiRequest_params_by_locationQueryItem>
-                                    pagination={false}
-                                    columns={requestColumns}
-                                    rowKey="name"
-                                    data={childrenParams}
-                                    size="small"
-                                />
-                            }
-                            style={{ width: 1000, maxWidth: 1000 }}
-                        >
-                            <Text type="primary" className={styles.hasChildParamTitle}>
-                                {v}
-                            </Text>
-                        </Popover>
+                    <Popover
+                        trigger="click"
+                        content={
+                            <Table<GetApiById200ResponseApiRequest_params_by_locationQueryItem>
+                                pagination={false}
+                                columns={requestColumns}
+                                rowKey="name"
+                                data={childrenParams}
+                                size="small"
+                            />
+                        }
+                        style={{ width: 1000, maxWidth: 1000 }}
+                    >
+                        <Text type="primary" className={styles.hasChildParamTitle}>
+                            {v}
+                        </Text>
                     </Popover>
                 );
             },
@@ -81,7 +76,17 @@ const RequestParams = (props: { apiDetail: GetApiById200ResponseApi }) => {
         { title: t("common.description"), dataIndex: "description", width: 240, placeholder: "-" },
         { title: t("api.defaultValue"), dataIndex: "default_value", width: 200, placeholder: "-" },
         { title: t("api.exampleValue"), dataIndex: "example", width: 200, placeholder: "-" },
-    ].map((column) => ({ ...column, ellipsis: true }));
+    ].map((column: any) => ({
+        ...column,
+        ellipsis: true,
+        render: (value: string, record: any) => (
+            <CEllipsis
+                showPopover="auto"
+                popoverContent={column.dataIndex === "name" ? value : undefined}
+                content={column.render ? column.render(value, record) : value}
+            />
+        ),
+    }));
     const requestParamsByLocation = apiDetail.request_params_by_location;
     const existLocations = (Object.keys(requestParamsByLocation) as Array<keyof typeof requestParamsByLocation>).filter(
         (location) => requestParamsByLocation[location]?.length > 0
